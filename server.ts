@@ -1,12 +1,31 @@
+#!/usr/bin/env node
+
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import { DEFAULT_OWNER, PORT } from './lib/constants';
+import { DEFAULT_OWNER } from './lib/constants';
+import { PORT } from './lib/constants/server.constants';
+import { setGitHubToken } from './lib/constants/github.constants';
 import { listOrganizationRepos } from './lib/github.service';
 import { fetchPullRequestComments } from './lib/github.repository';
 import { simplifyGitHubComments } from './lib/comments.helper';
+import { parseCliArguments } from './lib/cli';
+
+// Parse command line arguments
+const cliOptions = parseCliArguments();
+
+// Check if GitHub API key is provided
+if (!cliOptions.gh_api_key) {
+  console.error('Error: GitHub API key is required. Please provide it using the --gh_api_key flag.');
+  process.exit(1);
+}
+
+// Set GitHub API key
+setGitHubToken(cliOptions.gh_api_key);
+
+// Use port from command line if provided, otherwise use default
+const port = cliOptions.port || PORT;
 
 const app = express();
-// Use PORT constant directly instead of loading from .env
 
 // Middleware
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -86,8 +105,9 @@ app.get('/health', (_req: Request, res: Response): void => {
 });
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`MCP server is running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`MCP server is running on port ${port}`);
+  console.log(`GitHub API Token: Provided via CLI argument`);
 });
 
 export default app;

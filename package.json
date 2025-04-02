@@ -1,19 +1,25 @@
 {
-  "name": "ts-playground",
+  "name": "cr-mcp",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "server.ts",
   "type": "commonjs",
+  "bin": {
+    "cr-mcp": "./dist/server.js"
+  },
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "rm -rf dist && tsc",
     "test": "jest",
-    "start": "nodemon"
+    "start": "nodemon",
+    "prepare": "npm run build",
+    "postinstall": "chmod +x ./dist/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/yargs": "^17.0.33",
     "axios": "^1.8.1",
     "body-parser": "^1.20.3",
     "cheerio": "^1.0.0",
@@ -21,7 +27,8 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "nodemon": "^3.1.9",
-    "url": "^0.11.4"
+    "url": "^0.11.4",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@types/axios": "^0.14.4",

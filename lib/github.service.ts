@@ -1,4 +1,4 @@
-import { GITHUB_API_URL, GITHUB_HEADERS, DEFAULT_OWNER, BRANCH_TYPES } from './constants/github.constants';
+import { GITHUB_API_URL, DEFAULT_OWNER, BRANCH_TYPES, getGitHubHeaders } from './constants/github.constants';
 import { BranchDetails } from './types/github.types';
 
 /**
@@ -7,10 +7,12 @@ import { BranchDetails } from './types/github.types';
 export async function listOrganizationRepos(): Promise<string[]> {
   try {
     console.log(`Listing repos for organization: ${DEFAULT_OWNER}`);
-    console.log(`Using headers: ${JSON.stringify(GITHUB_HEADERS, null, 2)}`);
+
+    // Use the dynamic headers function to get the latest token
+    const headers = getGitHubHeaders();
 
     const response = await fetch(`${GITHUB_API_URL}/orgs/${DEFAULT_OWNER}/repos`, {
-      headers: GITHUB_HEADERS,
+      headers,
       method: 'GET',
     });
 
@@ -37,7 +39,7 @@ export async function listOrganizationRepos(): Promise<string[]> {
 export async function fetchRepoBranches(owner: string, repo: string): Promise<BranchDetails[]> {
   try {
     const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/branches`, {
-      headers: GITHUB_HEADERS,
+      headers: getGitHubHeaders(),
       method: 'GET',
     });
 
@@ -66,7 +68,7 @@ export async function fetchRepoBranches(owner: string, repo: string): Promise<Br
 export async function fetchPullRequestFiles(owner: string, repo: string, pullNumber: number): Promise<string[]> {
   try {
     const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/pulls/${pullNumber}/files`, {
-      headers: GITHUB_HEADERS,
+      headers: getGitHubHeaders(),
       method: 'GET',
     });
 

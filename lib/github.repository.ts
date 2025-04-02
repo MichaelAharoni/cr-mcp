@@ -1,4 +1,4 @@
-import { GITHUB_API_URL, GITHUB_HEADERS } from './constants/github.constants';
+import { GITHUB_API_URL, getGitHubHeaders } from './constants/github.constants';
 import { GitHubComment, GitHubPullRequest, GitHubReview, FetchCommentsOptions } from './types/github.types';
 
 /**
@@ -7,10 +7,12 @@ import { GitHubComment, GitHubPullRequest, GitHubReview, FetchCommentsOptions } 
 async function githubApiRequest<T>(path: string): Promise<T> {
   try {
     console.log(`Making GitHub API request to: ${GITHUB_API_URL}${path}`);
-    console.log(`Using headers: ${JSON.stringify(GITHUB_HEADERS, null, 2)}`);
+
+    // Use dynamic headers to always get the current token
+    const headers = getGitHubHeaders();
 
     const response = await fetch(`${GITHUB_API_URL}${path}`, {
-      headers: GITHUB_HEADERS,
+      headers,
       method: 'GET', // Explicitly set the method
     });
 
