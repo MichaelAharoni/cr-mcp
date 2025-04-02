@@ -1,30 +1,8 @@
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_API_URL = process.env.GITHUB_API_URL || 'https://api.github.com';
-const GITHUB_HEADERS = {
-  Authorization: `Bearer ${GITHUB_TOKEN}`,
-  Accept: 'application/vnd.github.v3+json',
-  'User-Agent': 'GitHub-PR-Comments-MCP-Server', // Adding required User-Agent header
-};
-
-// Define common constants
-export const BRANCH_TYPES = {
-  MASTER: 'master',
-  MAIN: 'main',
-};
-
-// Default organization
-export const DEFAULT_OWNER = 'Natural-Intelligence';
-
-// Interface for branch details
-export interface BranchDetails {
-  name: string;
-  sha: string;
-  protected: boolean;
-}
+/**
+ * GitHub repository service functions
+ */
+import { GITHUB_API_URL, GITHUB_HEADERS, DEFAULT_OWNER, BRANCH_TYPES } from './constants/github.constants';
+import { BranchDetails } from './types/github.types';
 
 /**
  * Lists all repositories for Natural-Intelligence organization
@@ -116,3 +94,6 @@ export async function fetchPullRequestFiles(owner: string, repo: string, pullNum
 export function getFullRepoName(owner: string, repo: string): string {
   return `${owner}/${repo}`;
 }
+
+// Export constants for use elsewhere
+export { DEFAULT_OWNER, BRANCH_TYPES };

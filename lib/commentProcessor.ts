@@ -1,46 +1,18 @@
-interface GitHubComment {
-  id: number;
-  user: {
-    login: string;
-  };
-  body: string;
-  created_at: string;
-  updated_at: string;
-  path?: string;
-  position?: number | null;
-  line?: number | null;
-  commit_id?: string;
-  diff_hunk?: string;
-  html_url: string;
-  // Adding missing properties that are coming from GitHub's API response
-  start_line?: number | null;
-  original_start_line?: number | null;
-  original_line?: number | null;
-  start_side?: string;
-  side?: string;
-  pull_request_review_id?: number;
-}
+/**
+ * Functions for processing and analyzing GitHub code review comments
+ */
+import { GitHubComment } from './types/github.types';
 
-export interface ProcessedComment {
-  id: number;
-  author: string;
-  comment: string;
-  file?: string;
-  line?: number;
-  codeContext?: string;
-  url: string;
-  timestamp: string;
-  type: 'review' | 'general';
-  refactoringRequested: boolean;
-  priority: 'high' | 'medium' | 'low';
-  suggestedAction?: string;
-  codeBlockSuggestion?: string;
-  aiAnalysis?: {
-    sentiment: 'positive' | 'negative' | 'neutral';
-    codeSuggestion: boolean;
-    refactoringTags: string[];
-  };
-}
+import { ProcessedComment, SimplifiedComment, SentimentType, PriorityLevel } from './types/comment.types';
+
+import {
+  REFACTORING_KEYWORDS,
+  HIGH_PRIORITY_KEYWORDS,
+  MEDIUM_PRIORITY_KEYWORDS,
+  ACTION_PATTERNS,
+  SENTIMENT_WORDS,
+  REFACTORING_PATTERNS,
+} from './constants/comment.constants';
 
 /**
  * Extracts the code context from a diff hunk
@@ -63,63 +35,20 @@ function extractCodeContext(diffHunk?: string): string | undefined {
  * Determines if a comment is requesting code refactoring
  */
 function isRefactoringRequest(comment: string): boolean {
-  const refactoringKeywords = [
-    'refactor',
-    'clean up',
-    'simplify',
-    'optimize',
-    'improve',
-    'rewrite',
-    'restructure',
-    'better approach',
-    'better way',
-    'should be changed',
-    'could be better',
-    'needs improvement',
-    'fix this',
-    'update this',
-    'change this',
-  ];
-
   const lowerComment = comment.toLowerCase();
 
-  return refactoringKeywords.some((keyword) => lowerComment.includes(keyword));
+  return REFACTORING_KEYWORDS.some((keyword) => lowerComment.includes(keyword));
 }
 
 /**
  * Determines the priority of a comment based on content
  */
-function determinePriority(comment: string): 'high' | 'medium' | 'low' {
-  const highPriorityKeywords = [
-    'critical',
-    'urgent',
-    'important',
-    'security',
-    'bug',
-    'fix immediately',
-    'vulnerability',
-    'crash',
-    'error',
-    'must fix',
-    'high priority',
-  ];
-
-  const mediumPriorityKeywords = [
-    'should',
-    'recommended',
-    'consider',
-    'might want to',
-    'suggestion',
-    'could improve',
-    'better if',
-    'would be nice',
-  ];
-
+function determinePriority(comment: string): PriorityLevel {
   const lowerComment = comment.toLowerCase();
 
-  if (highPriorityKeywords.some((keyword) => lowerComment.includes(keyword))) {
+  if (HIGH_PRIORITY_KEYWORDS.some((keyword) => lowerComment.includes(keyword))) {
     return 'high';
-  } else if (mediumPriorityKeywords.some((keyword) => lowerComment.includes(keyword))) {
+  } else if (MEDIUM_PRIORITY_KEYWORDS.some((keyword) => lowerComment.includes(keyword))) {
     return 'medium';
   }
 
@@ -147,14 +76,11 @@ function extractCodeBlock(comment: string): string | undefined {
 /**
  * Analyze the sentiment of the comment
  */
-function analyzeSentiment(comment: string): 'positive' | 'negative' | 'neutral' {
-  const positiveWords = ['good', 'great', 'excellent', 'nice', 'well done', 'perfect', 'yes'];
-  const negativeWords = ['bad', 'wrong', 'incorrect', 'error', 'mistake', 'fix', 'issue', 'bug', 'no'];
-
+function analyzeSentiment(comment: string): SentimentType {
   const lowerComment = comment.toLowerCase();
 
-  const positiveCount = positiveWords.filter((word) => lowerComment.includes(word)).length;
-  const negativeCount = negativeWords.filter((word) => lowerComment.includes(word)).length;
+  const positiveCount = SENTIMENT_WORDS.positive.filter((word) => lowerComment.includes(word)).length;
+  const negativeCount = SENTIMENT_WORDS.negative.filter((word) => lowerComment.includes(word)).length;
 
   if (positiveCount > negativeCount) {
     return 'positive';
@@ -169,17 +95,7 @@ function analyzeSentiment(comment: string): 'positive' | 'negative' | 'neutral' 
  * Extract suggested action from the comment
  */
 function extractSuggestedAction(comment: string): string | undefined {
-  // Common patterns for suggested actions in code reviews
-  const actionPatterns = [
-    /should\s+(\w+)/i,
-    /need\s+to\s+(\w+)/i,
-    /must\s+(\w+)/i,
-    /please\s+(\w+)/i,
-    /consider\s+(\w+ing)/i,
-    /try\s+(\w+ing)/i,
-  ];
-
-  for (const pattern of actionPatterns) {
+  for (const pattern of ACTION_PATTERNS) {
     const match = comment.match(pattern);
     if (match && match[1]) {
       return match[1].toLowerCase();
@@ -196,17 +112,8 @@ function extractRefactoringTags(comment: string): string[] {
   const tags: string[] = [];
   const lowerComment = comment.toLowerCase();
 
-  // Common refactoring patterns
-  const patterns = {
-    performance: ['slow', 'performance', 'optimize', 'faster', 'efficient'],
-    security: ['security', 'vulnerability', 'secure', 'sanitize', 'protect'],
-    readability: ['readable', 'clarity', 'clearer', 'understand', 'naming'],
-    maintainability: ['maintain', 'complex', 'simplify', 'technical debt'],
-    duplication: ['duplicate', 'redundant', 'repeat', 'reuse', 'dry'],
-  };
-
   // Check for each pattern
-  Object.entries(patterns).forEach(([tag, keywords]) => {
+  Object.entries(REFACTORING_PATTERNS).forEach(([tag, keywords]) => {
     if (keywords.some((keyword) => lowerComment.includes(keyword))) {
       tags.push(tag);
     }
@@ -248,20 +155,6 @@ export function processCodeReviewComments(comments: GitHubComment[]): ProcessedC
       },
     };
   });
-}
-
-/**
- * Simplified comment structure for easier consumption by the AI agent
- */
-export interface SimplifiedComment {
-  commentNumber: number;
-  filePath: string;
-  fromUserName: string;
-  commentMessage: string;
-  isHandled: boolean;
-  startLine: number | null;
-  endLine: number | null;
-  creationTime: string; // Adding creation time
 }
 
 /**

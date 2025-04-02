@@ -1,67 +1,9 @@
-import dotenv from 'dotenv';
+/**
+ * GitHub API integration for fetching PR comments and related data
+ */
+import { GITHUB_API_URL, GITHUB_HEADERS } from './constants/github.constants';
 
-dotenv.config();
-
-// GitHub API configuration
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_API_URL = process.env.GITHUB_API_URL || 'https://api.github.com';
-const GITHUB_HEADERS = {
-  Authorization: `Bearer ${GITHUB_TOKEN}`,
-  Accept: 'application/vnd.github.v3+json',
-  'User-Agent': 'GitHub-PR-Comments-MCP-Server',
-};
-
-interface FetchCommentsOptions {
-  owner: string;
-  repo: string;
-  pull_number?: number;
-  branch?: string;
-}
-
-interface GitHubComment {
-  id: number;
-  user: {
-    login: string;
-  };
-  body: string;
-  created_at: string;
-  updated_at: string;
-  path?: string;
-  position?: number | null;
-  line?: number | null;
-  commit_id?: string;
-  diff_hunk?: string;
-  html_url: string;
-  start_line?: number | null;
-  original_start_line?: number | null;
-  original_line?: number | null;
-  start_side?: string;
-  side?: string;
-  pull_request_review_id?: number;
-  original_position?: number | null;
-}
-
-interface GitHubPullRequest {
-  number: number;
-  head: {
-    ref: string; // branch name
-  };
-  user: {
-    login: string; // PR author
-  };
-}
-
-interface GitHubReview {
-  id: number;
-  user: {
-    login: string;
-  };
-  body: string;
-  state: string; // "APPROVED", "COMMENTED", "CHANGES_REQUESTED", "DISMISSED", etc.
-  submitted_at: string;
-  commit_id: string;
-  pull_request_url: string;
-}
+import { GitHubComment, GitHubPullRequest, GitHubReview, FetchCommentsOptions } from './types/github.types';
 
 /**
  * Makes a GitHub API request using fetch
