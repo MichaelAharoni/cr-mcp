@@ -1,17 +1,12 @@
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import {
-  fetchPullRequestComments,
-  processCodeReviewComments,
-  listOrganizationRepos,
-  DEFAULT_OWNER,
-  simplifyGitHubComments,
-  PORT,
-} from './lib';
+import { DEFAULT_OWNER, PORT } from './lib/constants';
+import { listOrganizationRepos } from './lib/github.service';
+import { fetchPullRequestComments } from './lib/github.repository';
+import { simplifyGitHubComments } from './lib/comments.helper';
 
 const app = express();
 // Use PORT constant directly instead of loading from .env
-const port = PORT;
 
 // Middleware
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -85,57 +80,14 @@ app.post('/get-cr-comments', async (req: Request, res: Response): Promise<void> 
   }
 });
 
-// MCP handler endpoint
-app.post('/mcp', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { repo, pull_number, branch } = req.body;
-    // Always use Natural-Intelligence as the owner
-    const owner = DEFAULT_OWNER;
-
-    if (!repo || (!pull_number && !branch)) {
-      res.status(400).json({
-        error: 'Missing required parameters. Please provide repo and either pull_number or branch',
-      });
-
-      return;
-    }
-
-    console.log(`Processing GitHub PR comments for ${owner}/${repo}`);
-
-    // Fetch PR comments from GitHub
-    const { comments } = await fetchPullRequestComments({
-      repo,
-      owner,
-      pull_number,
-      branch,
-    });
-
-    // Process the comments for the LLM agent
-    const processedComments = processCodeReviewComments(comments);
-
-    // Return the processed comments
-    res.status(200).json({
-      context: {
-        codeReviewComments: processedComments,
-      },
-    });
-  } catch (error) {
-    console.error('Error processing request:', error);
-    res.status(500).json({
-      error: 'Failed to process request',
-      details: error instanceof Error ? error.message : String(error),
-    });
-  }
-});
-
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response): void => {
   res.status(200).json({ status: 'healthy' });
 });
 
 // Start the server
-app.listen(port, () => {
-  console.log(`MCP server is running on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`MCP server is running on port ${PORT}`);
 });
 
 export default app;
