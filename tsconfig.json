@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "allowJs": false,
+    "skipLibCheck": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["@types/node"],
+    "module": "CommonJS",
+    "isolatedModules": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": true,
+    "noImplicitAny": true,
+    "alwaysStrict": true,
+    "sourceMap": true
+  },
+  "include": [
+    "src/**/*",
+    "index.ts",
+    "lib/**/*"
+  ],
+  "exclude": ["node_modules"]
+}
