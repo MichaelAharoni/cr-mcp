@@ -1,14 +1,6 @@
-/**
- * Central export file for the entire library
- */
-
-// Re-export types
 export * from './types';
-
-// Re-export constants
 export * from './constants';
 
-// Re-export functions from service modules
-export { fetchPullRequestComments } from './githubApi';
-export { processCodeReviewComments, simplifyGitHubComments } from './commentProcessor';
-export { fetchRepoBranches, fetchPullRequestFiles, getFullRepoName, listOrganizationRepos } from './repoService';
+export { fetchPullRequestComments } from './github.repository';
+export { processCodeReviewComments, simplifyGitHubComments } from './comments.helper';
+export { fetchRepoBranches, fetchPullRequestFiles, getFullRepoName, listOrganizationRepos } from './repo.service';

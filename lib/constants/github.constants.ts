@@ -1,16 +1,12 @@
 /**
  * GitHub API related constants
  */
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
 
 /**
  * GitHub API configuration
  */
-export const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-export const GITHUB_API_URL = process.env.GITHUB_API_URL || 'https://api.github.com';
+export const GITHUB_TOKEN = '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';
+export const GITHUB_API_URL = 'https://api.github.com';
 export const GITHUB_HEADERS = {
   Authorization: `Bearer ${GITHUB_TOKEN}`,
   Accept: 'application/vnd.github.v3+json',

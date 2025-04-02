@@ -1,20 +1,17 @@
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import dotenv from 'dotenv';
 import {
   fetchPullRequestComments,
   processCodeReviewComments,
   listOrganizationRepos,
   DEFAULT_OWNER,
   simplifyGitHubComments,
+  PORT,
 } from './lib';
 
-// Load environment variables
-dotenv.config();
-
 const app = express();
-const port = process.env.PORT || 3000;
-// Set default GitHub organization - now imported from lib
+// Use PORT constant directly instead of loading from .env
+const port = PORT;
 
 // Middleware
 app.use(bodyParser.json({ limit: '50mb' }));

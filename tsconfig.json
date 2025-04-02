@@ -19,7 +19,7 @@
   },
   "include": [
     "src/**/*",
-    "index.ts",
+    "server.ts",
     "lib/**/*"
   ],
   "exclude": ["node_modules"]
