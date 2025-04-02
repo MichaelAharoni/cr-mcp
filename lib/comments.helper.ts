@@ -1,6 +1,3 @@
-/**
- * Functions for processing and analyzing GitHub code review comments
- */
 import { GitHubComment } from './types/github.types';
 import { SimplifiedComment } from './types/comment.types';
 

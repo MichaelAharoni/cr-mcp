@@ -1,8 +1,4 @@
-/**
- * GitHub API integration for fetching PR comments and related data
- */
 import { GITHUB_API_URL, GITHUB_HEADERS } from './constants/github.constants';
-
 import { GitHubComment, GitHubPullRequest, GitHubReview, FetchCommentsOptions } from './types/github.types';
 
 /**

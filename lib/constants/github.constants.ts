@@ -1,8 +1,4 @@
 /**
- * GitHub API related constants
- */
-
-/**
  * GitHub API configuration
  */
 export const GITHUB_TOKEN = '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';

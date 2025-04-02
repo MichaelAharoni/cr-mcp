@@ -1,8 +1,4 @@
 /**
- * Types related to GitHub API integration
- */
-
-/**
  * Options for fetching comments from GitHub
  */
 export interface FetchCommentsOptions {

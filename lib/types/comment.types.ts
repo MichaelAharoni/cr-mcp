@@ -1,8 +1,4 @@
 /**
- * Types related to comment processing and analysis
- */
-
-/**
  * Simplified comment structure for easier consumption
  */
 export interface SimplifiedComment {

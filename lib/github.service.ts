@@ -1,6 +1,3 @@
-/**
- * GitHub repository service functions
- */
 import { GITHUB_API_URL, GITHUB_HEADERS, DEFAULT_OWNER, BRANCH_TYPES } from './constants/github.constants';
 import { BranchDetails } from './types/github.types';
 
