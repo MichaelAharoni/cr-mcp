@@ -4,6 +4,7 @@ import { hideBin } from 'yargs/helpers';
 interface CliOptions {
   gh_api_key: string;
   port?: number;
+  debug?: boolean;
 }
 
 /**
@@ -24,6 +25,12 @@ export function parseCliArguments(): CliOptions {
       describe: 'Port to run the server on',
       type: 'number',
     })
+    .option('debug', {
+      alias: 'd',
+      describe: 'Enable debug logging',
+      type: 'boolean',
+      default: false,
+    })
     .help()
     .alias('help', 'h')
     .parseSync();
@@ -31,5 +38,6 @@ export function parseCliArguments(): CliOptions {
   return {
     gh_api_key: argv.gh_api_key as string,
     port: argv.port,
+    debug: argv.debug,
   };
 }

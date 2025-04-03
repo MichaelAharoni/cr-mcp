@@ -5,6 +5,9 @@
 let githubToken = '';
 export const GITHUB_API_URL = 'https://api.github.com';
 
+// Import logger for debug messages
+import { logger } from '../constants';
+
 // Define the GitHub headers interface with index signature
 interface GitHubHeaders {
   Authorization: string;
@@ -15,6 +18,7 @@ interface GitHubHeaders {
 
 // Function to get GitHub headers with the current token
 export const getGitHubHeaders = (): GitHubHeaders => {
+  logger.debug('Fetching GitHub headers with token');
   if (!githubToken) {
     throw new Error('GitHub API token is required. Please provide it using the --gh_api_key flag.');
   }
@@ -46,6 +50,6 @@ export const BRANCH_TYPES = {
 export function setGitHubToken(token: string): void {
   if (token) {
     githubToken = token;
-    console.log('GitHub API token has been set from CLI arguments');
+    logger.info('GitHub API token has been set from CLI arguments');
   }
 }

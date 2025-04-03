@@ -1,11 +1,12 @@
 import { GitHubComment } from './types/github.types';
 import { SimplifiedComment } from './types/comment.types';
+import { logger } from './constants';
 
 /**
  * Groups comments by their endLine to determine which ones to keep
  */
 function filterLastAuthorCommentsByEndLine(comments: SimplifiedComment[], prAuthor: string): SimplifiedComment[] {
-  console.log(`Filtering comments for PR author: ${prAuthor}`);
+  logger.debug(`Filtering comments for PR author: ${prAuthor}`);
 
   // First, identify comment threads (grouped by file path and line numbers)
   const commentThreads = new Map<string, SimplifiedComment[]>();
@@ -31,7 +32,7 @@ function filterLastAuthorCommentsByEndLine(comments: SimplifiedComment[], prAuth
 
   // Process each thread to determine if it should be kept or filtered out
   for (const [key, thread] of commentThreads) {
-    console.log(`Processing thread at ${key} with ${thread.length} comments`);
+    logger.debug(`Processing thread at ${key} with ${thread.length} comments`);
 
     // Sort comments by creation time (newest first)
     thread.sort((a, b) => new Date(b.creationTime).getTime() - new Date(a.creationTime).getTime());
@@ -46,7 +47,7 @@ function filterLastAuthorCommentsByEndLine(comments: SimplifiedComment[], prAuth
     // If both author and reviewers commented AND the author was the last to comment,
     // skip the entire thread (author is waiting for reviewer response)
     if (hasAuthorComment && hasReviewerComment && newestComment.fromUserName === prAuthor) {
-      console.log(`Filtering out entire thread at ${key} - author ${prAuthor} is waiting for reviewer response`);
+      logger.debug(`Filtering out entire thread at ${key} - author ${prAuthor} is waiting for reviewer response`);
       continue; // Skip this entire thread
     }
 
@@ -55,7 +56,7 @@ function filterLastAuthorCommentsByEndLine(comments: SimplifiedComment[], prAuth
     result.push(...unhandledComments);
   }
 
-  console.log(`After filtering: ${result.length} comments remaining`);
+  logger.debug(`After filtering: ${result.length} comments remaining`);
 
   return result;
 }

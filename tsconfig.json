@@ -20,7 +20,8 @@
   "include": [
     "src/**/*",
     "server.ts",
-    "lib/**/*"
+    "lib/**/*",
+    "mcp-server-boilerplate.ts",
   ],
   "exclude": ["node_modules"]
 }

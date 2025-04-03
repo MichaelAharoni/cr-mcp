@@ -1,12 +1,13 @@
 import { GITHUB_API_URL, getGitHubHeaders } from './constants/github.constants';
 import { GitHubComment, GitHubPullRequest, GitHubReview, FetchCommentsOptions } from './types/github.types';
+import { logger } from './constants';
 
 /**
  * Makes a GitHub API request using fetch
  */
 async function githubApiRequest<T>(path: string): Promise<T> {
   try {
-    console.log(`Making GitHub API request to: ${GITHUB_API_URL}${path}`);
+    logger.debug(`Making GitHub API request to: ${GITHUB_API_URL}${path}`);
 
     // Use dynamic headers to always get the current token
     const headers = getGitHubHeaders();
@@ -18,13 +19,13 @@ async function githubApiRequest<T>(path: string): Promise<T> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`GitHub API error response: ${errorText}`);
+      logger.error(`GitHub API error response: ${errorText}`);
       throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
     }
 
     return (await response.json()) as T;
   } catch (error) {
-    console.error(`Error in GitHub API request to ${path}:`, error);
+    logger.error(`Error in GitHub API request to ${path}:`, error);
 
     throw new Error(`GitHub API request failed: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -84,7 +85,7 @@ async function getResolvedAndOutdatedComments(
 
     return handledComments;
   } catch (error) {
-    console.error('Error determining resolved/outdated comments:', error);
+    logger.error('Error determining resolved/outdated comments:', error);
 
     // Return an empty map if there was an error
     return new Map<number, boolean>();
@@ -161,7 +162,7 @@ export async function fetchPullRequestComments(options: FetchCommentsOptions): P
     const prDetails = await fetchPullRequestDetails(options.owner, options.repo, pullNumber);
     const prAuthor = prDetails.user.login;
 
-    console.log(`Found PR author: ${prAuthor}`);
+    logger.debug(`Found PR author: ${prAuthor}`);
 
     // Get both types of comments
     const [reviewComments, issueComments] = await Promise.all([
@@ -172,7 +173,7 @@ export async function fetchPullRequestComments(options: FetchCommentsOptions): P
     // Combine both types of comments
     const allComments = [...reviewComments, ...issueComments];
 
-    console.log(`Found ${allComments.length} comments for PR #${pullNumber}`);
+    logger.debug(`Found ${allComments.length} comments for PR #${pullNumber}`);
 
     // Determine which comments are handled (resolved or outdated)
     const handledStatus = await getResolvedAndOutdatedComments(options.owner, options.repo, pullNumber, allComments);
@@ -183,7 +184,7 @@ export async function fetchPullRequestComments(options: FetchCommentsOptions): P
       prAuthor,
     };
   } catch (error) {
-    console.error('Error fetching PR comments:', error);
+    logger.error('Error fetching PR comments:', error);
 
     throw new Error(`Failed to fetch pull request comments: ${error instanceof Error ? error.message : String(error)}`);
   }

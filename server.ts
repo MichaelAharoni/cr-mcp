@@ -5,7 +5,6 @@ import bodyParser from 'body-parser';
 import { DEFAULT_OWNER } from './lib/constants';
 import { PORT } from './lib/constants/server.constants';
 import { setGitHubToken } from './lib/constants/github.constants';
-import { listOrganizationRepos } from './lib/github.service';
 import { fetchPullRequestComments } from './lib/github.repository';
 import { simplifyGitHubComments } from './lib/comments.helper';
 import { parseCliArguments } from './lib/cli';
@@ -29,24 +28,6 @@ const app = express();
 
 // Middleware
 app.use(bodyParser.json({ limit: '50mb' }));
-
-// Endpoint to list available repositories in the organization
-app.get('/repos', async (_req: Request, res: Response): Promise<void> => {
-  try {
-    const repos = await listOrganizationRepos();
-
-    res.status(200).json({
-      organization: DEFAULT_OWNER,
-      repositories: repos,
-    });
-  } catch (error) {
-    console.error('Error fetching repositories:', error);
-    res.status(500).json({
-      error: 'Failed to fetch repositories',
-      details: error instanceof Error ? error.message : String(error),
-    });
-  }
-});
 
 // New endpoint to get code review comments for a PR based on branch
 app.post('/get-cr-comments', async (req: Request, res: Response): Promise<void> => {
@@ -77,7 +58,7 @@ app.post('/get-cr-comments', async (req: Request, res: Response): Promise<void> 
 
     // Use explicitly provided PR author if available, otherwise use the one detected from GitHub
     const prAuthor = explicitPrAuthor || detectedPrAuthor;
-    console.log(`Using PR author: ${prAuthor} (${explicitPrAuthor ? 'explicitly provided' : 'auto-detected'})`);
+    console.log(`2Using PR author: ${prAuthor} (${explicitPrAuthor ? 'explicitly provided' : 'auto-detected'})`);
 
     // Transform the comments to the simplified structure with proper handling status
     // Pass the PR author for filtering

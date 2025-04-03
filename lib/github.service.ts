@@ -2,38 +2,6 @@ import { GITHUB_API_URL, DEFAULT_OWNER, BRANCH_TYPES, getGitHubHeaders } from '.
 import { BranchDetails } from './types/github.types';
 
 /**
- * Lists all repositories for Natural-Intelligence organization
- */
-export async function listOrganizationRepos(): Promise<string[]> {
-  try {
-    console.log(`Listing repos for organization: ${DEFAULT_OWNER}`);
-
-    // Use the dynamic headers function to get the latest token
-    const headers = getGitHubHeaders();
-
-    const response = await fetch(`${GITHUB_API_URL}/orgs/${DEFAULT_OWNER}/repos`, {
-      headers,
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`GitHub API error response: ${errorText}`);
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
-    }
-
-    const repos = (await response.json()) as { name: string }[];
-
-    return repos.map((repo) => repo.name);
-  } catch (error) {
-    console.error('Error fetching organization repositories:', error);
-    throw new Error(
-      `Failed to fetch organization repositories: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
-}
-
-/**
  * Fetch all branches for a repository
  */
 export async function fetchRepoBranches(owner: string, repo: string): Promise<BranchDetails[]> {
