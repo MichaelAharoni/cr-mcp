@@ -94,6 +94,30 @@ After installing the package globally or via npx:
 npx cr-mcp --gh_api_key=your_github_api_key_here --gh_owner=your_github_owner_here
 ```
 
+### VS Code MCP Configuration
+
+You can add this server to your VS Code MCP configuration by adding the following to your `.vscode/mcp.json` file:
+
+```json
+{
+    "servers": {
+        "github-pr-comments": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "cr-mcp",
+                "--gh_api_key=<YOUR_GITHUB_API_KEY>",
+                "--gh_owner=<OWNER_NAME-(Organization or a username)>",
+                "--stderr",
+                "--debug"
+            ]
+        }
+    }
+}
+```
+
+Replace `<YOUR_GITHUB_API_KEY>` with your actual GitHub API key and `<OWNER_NAME-(Organization or a username)>` with your GitHub organization or username.
+
 ## API Endpoints
 
 - `POST /fix-pr-comments` - Gets code review comments for a pull request in order the fix them by the agent
