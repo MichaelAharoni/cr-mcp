@@ -265,13 +265,9 @@ export async function fetchBranches(repo: string): Promise<BranchDetails[]> {
 /**
  * Fetches files affected by a pull request
  */
-export async function fetchPullRequestFiles(repo: string, pullNumber: number): Promise<string[]> {
-  // Clean repository name (remove owner if present)
-  const cleanRepo = cleanRepositoryName(repo);
-
-  logger.info(`Fetching files for PR #${pullNumber} in ${getGitHubOwner()}/${cleanRepo}`);
-
-  const files = await GitHubRepository.fetchPullRequestFiles(getGitHubOwner(), cleanRepo, pullNumber);
-
-  return extractFilenames(files);
+export function getFullRepoName(owner: string, repo: string): string {
+  return `${owner}/${repo}`;
 }
+
+// Export constants for use elsewhere
+export { DEFAULT_OWNER, BRANCH_TYPES };

@@ -85,7 +85,11 @@ export interface FixedComment {
    * A concise summary (3-15 words) describing how the comment was addressed
    * This will be added to the PR comment with "Done - " prefix
    */
+<<<<<<< HEAD
   fixSummary?: string;
+=======
+  fixSummary: string;
+>>>>>>> 6bb00ec (adding another tool)
 
   /**
    * The reaction to add to the comment (optional)
@@ -116,8 +120,11 @@ export interface MarkCommentsResponse {
     successful: number;
     failed: number;
   };
+<<<<<<< HEAD
   /**
    * Steps forward for the user
    */
   stepsForward: string[];
+=======
+>>>>>>> 6bb00ec (adding another tool)
 }

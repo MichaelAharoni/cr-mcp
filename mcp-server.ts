@@ -203,6 +203,51 @@ const transport = new StdioServerTransport();
         logger.error(`${MESSAGE_DICTIONARY.FAILED_MARK_COMMENTS} ${message}`);
         throw new McpError(STATUS_CODES.INTERNAL_SERVER_ERROR, `${MESSAGE_DICTIONARY.FAILED_MARK_COMMENTS} ${message}`);
       }
+    } else if (request.params.name === 'mark_comments_as_handled') {
+      // Extract parameters from the request
+      const { repo, fixedComments } = request.params.arguments as {
+        repo: string;
+        fixedComments: FixedComment[];
+      };
+
+      // Validate required parameters
+      if (!repo) {
+        throw new McpError(400, 'Missing required parameter: repo');
+      }
+
+      if (!fixedComments || !Array.isArray(fixedComments) || fixedComments.length === 0) {
+        throw new McpError(400, 'Missing or invalid fixedComments array');
+      }
+
+      // Validate each fixed comment entry
+      for (const comment of fixedComments) {
+        if (typeof comment.fixedCommentId !== 'number' || !comment.fixSummary) {
+          throw new McpError(400, 'Each fixedComment must have a fixedCommentId (number) and fixSummary (string)');
+        }
+      }
+
+      try {
+        // Use the service layer to handle the business logic
+        const response = await handleFixedComments({
+          repo,
+          fixedComments,
+        });
+
+        // Return the result in the expected format
+        return {
+          isError: false,
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logger.error(`Error marking comments as handled: ${message}`);
+        throw new McpError(500, `Failed to mark comments as handled: ${message}`);
+      }
     } else {
       // If the tool name doesn't match any of our tools
       throw new McpError(STATUS_CODES.NOT_FOUND, MESSAGE_DICTIONARY.TOOL_NOT_FOUND);
