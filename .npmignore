@@ -1,0 +1,72 @@
+# Development files
+.vscode/
+.git/
+.gitignore
+.github/
+.eslintrc
+.eslintignore
+.prettierrc
+.prettierignore
+nodemon.json
+
+# Source maps
+*.map
+
+# TypeScript source files (only ship compiled JavaScript)
+*.ts
+!*.d.ts
+
+# Test files
+__tests__/
+test/
+tests/
+*.test.js
+*.test.ts
+jest.config.js
+
+# Documentation
+docs/
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+
+# Examples and sample files
+examples/
+sample/
+af.json
+
+# Build and CI configuration
+tsconfig.json
+.travis.yml
+.gitlab-ci.yml
+.circleci/
+.jenkins*
+eslint.config.js
+
+# Logs and runtime data
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+
+# Configuration files
+.env
+.env.*
+
+# Editor directories and files
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
