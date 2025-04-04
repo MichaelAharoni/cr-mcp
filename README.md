@@ -64,6 +64,5 @@ npx cr-mcp --gh_api_key=your_github_api_key_here
 
 ## API Endpoints
 
-- `GET /repos` - Lists all repositories in the organization
-- `POST /get-cr-comments` - Gets code review comments for a pull request
+- `POST /fix-pr-comments` - Gets code review comments for a pull request in order the fix them by the agent
 - `GET /health` - Health check endpoint

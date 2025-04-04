@@ -51,7 +51,7 @@ const transport = new StdioServerTransport();
     return {
       tools: [
         {
-          name: 'get_pr_comments',
+          name: 'fix_pr_comments',
           description: 'Get comments from a GitHub pull request, filtering based on status and author',
           inputSchema: {
             type: 'object',
@@ -79,7 +79,7 @@ const transport = new StdioServerTransport();
 
   // Handle tool calls
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    if (request.params.name === 'get_pr_comments') {
+    if (request.params.name === 'fix_pr_comments') {
       // Extract parameters from the request
       const {
         repo,
@@ -112,7 +112,7 @@ const transport = new StdioServerTransport();
 
         // Use explicitly provided PR author if available, otherwise use the one detected from GitHub
         const prAuthor = explicitPrAuthor || detectedPrAuthor;
-        logger.info(`3Using PR author: ${prAuthor} (${explicitPrAuthor ? 'explicitly provided' : 'auto-detected'})`);
+        logger.info(`Using PR author: ${prAuthor} (${explicitPrAuthor ? 'explicitly provided' : 'auto-detected'})`);
 
         // Transform the comments to the simplified structure with proper handling status
         const simplifiedComments = simplifyGitHubComments(comments, handledStatus, prAuthor);
@@ -126,10 +126,17 @@ const transport = new StdioServerTransport();
               type: 'text',
               text: JSON.stringify(
                 {
-                  repository: repo,
                   branch: branch,
-                  prAuthor: prAuthor,
                   comments: simplifiedComments,
+                  stepsForward: [
+                    `1. Don't explain the user that each comment hasn't been handled yet, unless the user explicitly asks for it.`,
+                    `2. If in order to handle a comment, you need to ask the user for more information or context, do so.`,
+                    `3. Where you can, provide the user with a list of possible actions they can take to handle the comment (if its a difficult one).`,
+                    `4. If you are not sure if a comment is handled or not, ask the user for clarification.`,
+                    `5. Understand the context of the comment and provide a response that is relevant to the comment.`,
+                    `6. If the comment doen't require any action, you can ignore it. (like a positive feedback comment)`,
+                    `7. When you finish handling the PR, you can ask the user if they want to mark all comments as handled.`,
+                  ],
                 },
                 null,
                 2

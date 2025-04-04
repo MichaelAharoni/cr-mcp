@@ -86,6 +86,7 @@ export function simplifyGitHubComments(
 
       return {
         commentNumber: index + 1, // Start from 1
+        commentId: comment.id,
         filePath: comment.path || '',
         fromUserName: comment.user.login,
         commentMessage: comment.body,

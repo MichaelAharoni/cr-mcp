@@ -4,7 +4,7 @@
   "main": "server.ts",
   "type": "commonjs",
   "bin": {
-    "cr-mcp": "./dist/server.js"
+    "cr-mcp": "./dist/mcp-server.js"
   },
   "scripts": {
     "lint": "eslint . --ext .ts",
@@ -12,7 +12,7 @@
     "test": "jest",
     "start": "nodemon",
     "prepare": "npm run build",
-    "postinstall": "chmod +x ./dist/server.js"
+    "postinstall": "chmod +x ./dist/mcp-server.js"
   },
   "keywords": [],
   "author": "",

@@ -30,7 +30,7 @@ const app = express();
 app.use(bodyParser.json({ limit: '50mb' }));
 
 // New endpoint to get code review comments for a PR based on branch
-app.post('/get-cr-comments', async (req: Request, res: Response): Promise<void> => {
+app.post('/fix-pr-comments', async (req: Request, res: Response): Promise<void> => {
   try {
     const { repo, branch, prAuthor: explicitPrAuthor } = req.body;
     const owner = DEFAULT_OWNER;

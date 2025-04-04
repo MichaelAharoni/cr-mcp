@@ -3,6 +3,7 @@
  */
 export interface SimplifiedComment {
   commentNumber: number;
+  commentId: number;
   filePath: string;
   fromUserName: string;
   commentMessage: string;
