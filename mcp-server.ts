@@ -1,14 +1,15 @@
 #!/usr/bin/env node
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema, McpError } from '@modelcontextprotocol/sdk/types.js';
 
 // Import necessary services and utilities
-import { DEFAULT_OWNER, setDebugMode, logger } from './lib/constants';
+import { setDebugMode, logger } from './lib/constants';
 import { setGitHubToken } from './lib/constants/github.constants';
-import { fetchPullRequestComments } from './lib/github.repository';
-import { simplifyGitHubComments } from './lib/comments.helper';
+import { getPullRequestComments, handleFixedComments } from './lib/github.service';
 import { parseCliArguments } from './lib/cli';
+import { FixedComment } from './lib/types/github.types';
 
 // Parse command line arguments
 const cliOptions = parseCliArguments();
@@ -73,6 +74,42 @@ const transport = new StdioServerTransport();
             required: ['repo', 'branch'],
           },
         },
+        {
+          name: 'mark_comments_as_handled',
+          description: 'Mark GitHub PR comments as handled by replying with a resolution summary and adding a reaction',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              repo: {
+                type: 'string',
+                description: 'The GitHub repository name containing the PR comments',
+              },
+              fixedComments: {
+                type: 'array',
+                description: 'List of comments to mark as fixed',
+                items: {
+                  type: 'object',
+                  properties: {
+                    fixedCommentId: {
+                      type: 'number',
+                      description: 'The ID of the GitHub comment that has been fixed',
+                    },
+                    fixSummary: {
+                      type: 'string',
+                      description: 'A concise summary (3-15 words) of how the comment was addressed',
+                    },
+                    reaction: {
+                      type: 'string',
+                      description: 'Optional: The reaction to add (e.g., rocket, heart, hooray). Default: rocket',
+                    },
+                  },
+                  required: ['fixedCommentId', 'fixSummary'],
+                },
+              },
+            },
+            required: ['repo', 'fixedComments'],
+          },
+        },
       ],
     };
   });
@@ -96,27 +133,13 @@ const transport = new StdioServerTransport();
         throw new McpError(400, 'Missing required parameters. Please provide repo and branch');
       }
 
-      logger.info(`Fetching PR comments for ${DEFAULT_OWNER}/${repo}, branch: ${branch}`);
-
       try {
-        // Fetch PR comments from GitHub with handling status and PR author information
-        const {
-          comments,
-          handledStatus,
-          prAuthor: detectedPrAuthor,
-        } = await fetchPullRequestComments({
+        // Use the service layer to handle the business logic
+        const result = await getPullRequestComments({
           repo,
-          owner: DEFAULT_OWNER,
           branch,
+          explicitPrAuthor,
         });
-
-        // Use explicitly provided PR author if available, otherwise use the one detected from GitHub
-        const prAuthor = explicitPrAuthor || detectedPrAuthor;
-        logger.info(`Using PR author: ${prAuthor} (${explicitPrAuthor ? 'explicitly provided' : 'auto-detected'})`);
-
-        // Transform the comments to the simplified structure with proper handling status
-        const simplifiedComments = simplifyGitHubComments(comments, handledStatus, prAuthor);
-        logger.info('Simplified comments:', simplifiedComments);
 
         // Return the result in the expected format
         return {
@@ -124,23 +147,7 @@ const transport = new StdioServerTransport();
           content: [
             {
               type: 'text',
-              text: JSON.stringify(
-                {
-                  branch: branch,
-                  comments: simplifiedComments,
-                  stepsForward: [
-                    `1. Don't explain the user that each comment hasn't been handled yet, unless the user explicitly asks for it.`,
-                    `2. If in order to handle a comment, you need to ask the user for more information or context, do so.`,
-                    `3. Where you can, provide the user with a list of possible actions they can take to handle the comment (if its a difficult one).`,
-                    `4. If you are not sure if a comment is handled or not, ask the user for clarification.`,
-                    `5. Understand the context of the comment and provide a response that is relevant to the comment.`,
-                    `6. If the comment doen't require any action, you can ignore it. (like a positive feedback comment)`,
-                    `7. When you finish handling the PR, you can ask the user if they want to mark all comments as handled.`,
-                  ],
-                },
-                null,
-                2
-              ),
+              text: JSON.stringify(result, null, 2),
             },
           ],
         };
@@ -148,6 +155,51 @@ const transport = new StdioServerTransport();
         const message = error instanceof Error ? error.message : String(error);
         logger.error(`Error fetching PR comments: ${message}`);
         throw new McpError(500, `Failed to fetch PR comments: ${message}`);
+      }
+    } else if (request.params.name === 'mark_comments_as_handled') {
+      // Extract parameters from the request
+      const { repo, fixedComments } = request.params.arguments as {
+        repo: string;
+        fixedComments: FixedComment[];
+      };
+
+      // Validate required parameters
+      if (!repo) {
+        throw new McpError(400, 'Missing required parameter: repo');
+      }
+
+      if (!fixedComments || !Array.isArray(fixedComments) || fixedComments.length === 0) {
+        throw new McpError(400, 'Missing or invalid fixedComments array');
+      }
+
+      // Validate each fixed comment entry
+      for (const comment of fixedComments) {
+        if (typeof comment.fixedCommentId !== 'number' || !comment.fixSummary) {
+          throw new McpError(400, 'Each fixedComment must have a fixedCommentId (number) and fixSummary (string)');
+        }
+      }
+
+      try {
+        // Use the service layer to handle the business logic
+        const response = await handleFixedComments({
+          repo,
+          fixedComments,
+        });
+
+        // Return the result in the expected format
+        return {
+          isError: false,
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logger.error(`Error marking comments as handled: ${message}`);
+        throw new McpError(500, `Failed to mark comments as handled: ${message}`);
       }
     } else {
       // If the tool name doesn't match any of our tools

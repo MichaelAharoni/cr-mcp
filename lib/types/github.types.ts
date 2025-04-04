@@ -70,3 +70,49 @@ export interface BranchDetails {
   sha: string;
   protected: boolean;
 }
+
+/**
+ * Options for marking a comment as fixed/handled
+ */
+export interface FixedComment {
+  /**
+   * The ID of the GitHub comment that has been fixed
+   */
+  fixedCommentId: number;
+
+  /**
+   * A concise summary (3-15 words) describing how the comment was addressed
+   * This will be added to the PR comment with "Done - " prefix
+   */
+  fixSummary: string;
+
+  /**
+   * The reaction to add to the comment (optional)
+   * Available reactions: +1, -1, laugh, confused, heart, hooray, rocket, eyes
+   * Default: "rocket"
+   */
+  reaction?: string;
+}
+
+/**
+ * Response from marking comments as handled
+ */
+export interface MarkCommentsResponse {
+  /**
+   * Results for each comment
+   */
+  results: {
+    commentId: number;
+    success: boolean;
+    message: string;
+  }[];
+
+  /**
+   * Summary of the operation
+   */
+  summary: {
+    total: number;
+    successful: number;
+    failed: number;
+  };
+}

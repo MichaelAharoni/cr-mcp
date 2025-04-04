@@ -21,7 +21,7 @@
     "src/**/*",
     "server.ts",
     "lib/**/*",
-    "mcp-server-boilerplate.ts",
+    "mcp-server.ts",
   ],
   "exclude": ["node_modules"]
 }

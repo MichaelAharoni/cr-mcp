@@ -1,191 +1,145 @@
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { GITHUB_API_URL, getGitHubHeaders } from './constants/github.constants';
-import { GitHubComment, GitHubPullRequest, GitHubReview, FetchCommentsOptions } from './types/github.types';
 import { logger } from './constants';
+import { GitHubComment, GitHubPullRequest, GitHubReview } from './types/github.types';
 
 /**
- * Makes a GitHub API request using fetch
+ * Makes a GitHub API request using axios
  */
-async function githubApiRequest<T>(path: string): Promise<T> {
+async function githubApiRequest<T>(
+  path: string,
+  options: { method?: string; body?: unknown; headers?: Record<string, string> } = {}
+): Promise<T> {
   try {
-    logger.debug(`Making GitHub API request to: ${GITHUB_API_URL}${path}`);
+    const url = `${GITHUB_API_URL}${path}`;
+    logger.debug(`Making GitHub API request to: ${url}`);
 
     // Use dynamic headers to always get the current token
-    const headers = getGitHubHeaders();
+    const headers = {
+      ...getGitHubHeaders(),
+      ...(options.headers || {}),
+    };
 
-    const response = await fetch(`${GITHUB_API_URL}${path}`, {
+    const method = options.method || 'GET';
+    const config: AxiosRequestConfig = {
+      method,
+      url,
       headers,
-      method: 'GET', // Explicitly set the method
-    });
+    };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      logger.error(`GitHub API error response: ${errorText}`);
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+    if (options.body) {
+      config.data = options.body;
     }
 
-    return (await response.json()) as T;
-  } catch (error) {
-    logger.error(`Error in GitHub API request to ${path}:`, error);
+    const response: AxiosResponse<T> = await axios(config);
 
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      logger.error(`GitHub API error: ${error.response?.status} ${error.response?.statusText}`);
+      logger.error(`Error details: ${JSON.stringify(error.response?.data || {})}`);
+      throw new Error(`GitHub API error: ${error.response?.status} ${error.response?.statusText}`);
+    }
+
+    logger.error(`Error in GitHub API request to ${path}:`, error);
     throw new Error(`GitHub API request failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
 /**
- * Fetch all pull requests for a repository
+ * Repository API endpoints
  */
-async function fetchPullRequests(options: FetchCommentsOptions): Promise<GitHubPullRequest[]> {
-  const path = `/repos/${options.owner}/${options.repo}/pulls?state=open`;
+export const GitHubRepository = {
+  /**
+   * Fetch repo branches from GitHub API
+   */
+  async fetchRepoBranches(
+    owner: string,
+    repo: string
+  ): Promise<Array<{ name: string; commit: { sha: string }; protected: boolean }>> {
+    const path = `/repos/${owner}/${repo}/branches`;
 
-  return await githubApiRequest<GitHubPullRequest[]>(path);
-}
+    return githubApiRequest(path);
+  },
 
-/**
- * Fetch reviews for a pull request
- */
-async function fetchPullRequestReviews(owner: string, repo: string, pullNumber: number): Promise<GitHubReview[]> {
-  const path = `/repos/${owner}/${repo}/pulls/${pullNumber}/reviews`;
+  /**
+   * Fetch files affected by a pull request
+   */
+  async fetchPullRequestFiles(owner: string, repo: string, pullNumber: number): Promise<Array<{ filename: string }>> {
+    const path = `/repos/${owner}/${repo}/pulls/${pullNumber}/files`;
 
-  return await githubApiRequest<GitHubReview[]>(path);
-}
+    return githubApiRequest(path);
+  },
 
-/**
- * Determine which comments are resolved or outdated
- */
-async function getResolvedAndOutdatedComments(
-  owner: string,
-  repo: string,
-  pullNumber: number,
-  comments: GitHubComment[]
-): Promise<Map<number, boolean>> {
-  try {
-    // Get all reviews to check for resolved comments
-    const reviews = await fetchPullRequestReviews(owner, repo, pullNumber);
+  /**
+   * Reply to a pull request comment
+   */
+  async replyToComment(owner: string, repo: string, commentId: number, body: string): Promise<unknown> {
+    const path = `/repos/${owner}/${repo}/pulls/comments/${commentId}/replies`;
 
-    // Map to track which comments are handled (resolved or outdated)
-    const handledComments = new Map<number, boolean>();
+    return githubApiRequest(path, {
+      method: 'POST',
+      body: { body },
+    });
+  },
 
-    // Check each comment
-    for (const comment of comments) {
-      // A comment is outdated if position is null but original_position has a value
-      const isOutdated = comment.position === null && comment.original_position !== null;
+  /**
+   * Add a reaction to a pull request comment
+   */
+  async addReactionToComment(owner: string, repo: string, commentId: number, reaction: string): Promise<unknown> {
+    const path = `/repos/${owner}/${repo}/pulls/comments/${commentId}/reactions`;
 
-      // Check if the comment is part of a review that was approved or changes requested
-      let isResolved = false;
-      if (comment.pull_request_review_id) {
-        const associatedReview = reviews.find((review) => review.id === comment.pull_request_review_id);
-        if (associatedReview && ['APPROVED', 'CHANGES_REQUESTED'].includes(associatedReview.state)) {
-          isResolved = true;
-        }
-      }
+    return githubApiRequest(path, {
+      method: 'POST',
+      body: { content: reaction },
+      headers: {
+        Accept: 'application/vnd.github.squirrel-girl-preview+json',
+      },
+    });
+  },
 
-      // Mark the comment as handled if it's either outdated or resolved
-      handledComments.set(comment.id, isOutdated || isResolved);
-    }
+  /**
+   * Fetch all pull requests for a repository
+   */
+  async fetchPullRequests(owner: string, repo: string): Promise<GitHubPullRequest[]> {
+    const path = `/repos/${owner}/${repo}/pulls?state=open`;
 
-    return handledComments;
-  } catch (error) {
-    logger.error('Error determining resolved/outdated comments:', error);
+    return githubApiRequest(path);
+  },
 
-    // Return an empty map if there was an error
-    return new Map<number, boolean>();
-  }
-}
+  /**
+   * Fetch reviews for a pull request
+   */
+  async fetchPullRequestReviews(owner: string, repo: string, pullNumber: number): Promise<GitHubReview[]> {
+    const path = `/repos/${owner}/${repo}/pulls/${pullNumber}/reviews`;
 
-/**
- * Fetch detailed information about a pull request
- */
-async function fetchPullRequestDetails(owner: string, repo: string, pullNumber: number): Promise<GitHubPullRequest> {
-  const path = `/repos/${owner}/${repo}/pulls/${pullNumber}`;
+    return githubApiRequest(path);
+  },
 
-  return await githubApiRequest<GitHubPullRequest>(path);
-}
+  /**
+   * Fetch detailed information about a pull request
+   */
+  async fetchPullRequestDetails(owner: string, repo: string, pullNumber: number): Promise<GitHubPullRequest> {
+    const path = `/repos/${owner}/${repo}/pulls/${pullNumber}`;
 
-/**
- * Find pull request number from branch name
- */
-async function getPullNumberFromBranch(options: FetchCommentsOptions): Promise<number | null> {
-  if (!options.branch) {
-    throw new Error('Branch name is required');
-  }
+    return githubApiRequest(path);
+  },
 
-  const pullRequests = await fetchPullRequests(options);
-  const matchingPR = pullRequests.find((pr) => pr.head.ref === options.branch);
+  /**
+   * Fetch review comments from a pull request (comments on specific lines of code)
+   */
+  async fetchPrReviewComments(owner: string, repo: string, pullNumber: number): Promise<GitHubComment[]> {
+    const path = `/repos/${owner}/${repo}/pulls/${pullNumber}/comments`;
 
-  return matchingPR ? matchingPR.number : null;
-}
+    return githubApiRequest(path);
+  },
 
-/**
- * Fetch review comments from a pull request (comments on specific lines of code)
- */
-async function fetchPrReviewComments(owner: string, repo: string, pullNumber: number): Promise<GitHubComment[]> {
-  const path = `/repos/${owner}/${repo}/pulls/${pullNumber}/comments`;
+  /**
+   * Fetch general issue comments from a pull request
+   */
+  async fetchPrIssueComments(owner: string, repo: string, pullNumber: number): Promise<GitHubComment[]> {
+    const path = `/repos/${owner}/${repo}/issues/${pullNumber}/comments`;
 
-  return await githubApiRequest<GitHubComment[]>(path);
-}
-
-/**
- * Fetch general issue comments from a pull request
- */
-async function fetchPrIssueComments(owner: string, repo: string, pullNumber: number): Promise<GitHubComment[]> {
-  const path = `/repos/${owner}/${repo}/issues/${pullNumber}/comments`;
-
-  return await githubApiRequest<GitHubComment[]>(path);
-}
-
-/**
- * Fetch all comments from a pull request with handling status and author info
- */
-export async function fetchPullRequestComments(options: FetchCommentsOptions): Promise<{
-  comments: GitHubComment[];
-  handledStatus: Map<number, boolean>;
-  prAuthor: string;
-}> {
-  try {
-    let pullNumber = options.pull_number;
-
-    // If pull_number is not provided but branch is, find the PR number
-    if (!pullNumber && options.branch) {
-      const prNumber = await getPullNumberFromBranch(options);
-      if (!prNumber) {
-        throw new Error(`No open pull request found for branch: ${options.branch}`);
-      }
-
-      pullNumber = prNumber;
-    }
-
-    if (!pullNumber) {
-      throw new Error('Pull request number is required');
-    }
-
-    // Fetch PR details to get the author
-    const prDetails = await fetchPullRequestDetails(options.owner, options.repo, pullNumber);
-    const prAuthor = prDetails.user.login;
-
-    logger.debug(`Found PR author: ${prAuthor}`);
-
-    // Get both types of comments
-    const [reviewComments, issueComments] = await Promise.all([
-      fetchPrReviewComments(options.owner, options.repo, pullNumber),
-      fetchPrIssueComments(options.owner, options.repo, pullNumber),
-    ]);
-
-    // Combine both types of comments
-    const allComments = [...reviewComments, ...issueComments];
-
-    logger.debug(`Found ${allComments.length} comments for PR #${pullNumber}`);
-
-    // Determine which comments are handled (resolved or outdated)
-    const handledStatus = await getResolvedAndOutdatedComments(options.owner, options.repo, pullNumber, allComments);
-
-    return {
-      comments: allComments,
-      handledStatus,
-      prAuthor,
-    };
-  } catch (error) {
-    logger.error('Error fetching PR comments:', error);
-
-    throw new Error(`Failed to fetch pull request comments: ${error instanceof Error ? error.message : String(error)}`);
-  }
-}
+    return githubApiRequest(path);
+  },
+};

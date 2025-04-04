@@ -2,12 +2,11 @@
 
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import { DEFAULT_OWNER } from './lib/constants';
 import { PORT } from './lib/constants/server.constants';
 import { setGitHubToken } from './lib/constants/github.constants';
-import { fetchPullRequestComments } from './lib/github.repository';
-import { simplifyGitHubComments } from './lib/comments.helper';
+import { getPullRequestComments, handleFixedComments } from './lib/github.service';
 import { parseCliArguments } from './lib/cli';
+import { FixedComment } from './lib/types/github.types';
 
 // Parse command line arguments
 const cliOptions = parseCliArguments();
@@ -29,11 +28,10 @@ const app = express();
 // Middleware
 app.use(bodyParser.json({ limit: '50mb' }));
 
-// New endpoint to get code review comments for a PR based on branch
+// Endpoint to get code review comments for a PR based on branch
 app.post('/fix-pr-comments', async (req: Request, res: Response): Promise<void> => {
   try {
     const { repo, branch, prAuthor: explicitPrAuthor } = req.body;
-    const owner = DEFAULT_OWNER;
 
     if (!repo || !branch) {
       res.status(400).json({
@@ -43,38 +41,77 @@ app.post('/fix-pr-comments', async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    console.log(`Fetching PR comments for ${owner}/${repo}, branch: ${branch}`);
+    console.log(`Processing fix-pr-comments request for ${repo}, branch: ${branch}`);
 
-    // Fetch PR comments from GitHub with handling status and PR author information
-    const {
-      comments,
-      handledStatus,
-      prAuthor: detectedPrAuthor,
-    } = await fetchPullRequestComments({
+    // Use the service layer to get PR comments
+    const result = await getPullRequestComments({
       repo,
-      owner,
       branch,
+      explicitPrAuthor,
     });
 
-    // Use explicitly provided PR author if available, otherwise use the one detected from GitHub
-    const prAuthor = explicitPrAuthor || detectedPrAuthor;
-    console.log(`2Using PR author: ${prAuthor} (${explicitPrAuthor ? 'explicitly provided' : 'auto-detected'})`);
-
-    // Transform the comments to the simplified structure with proper handling status
-    // Pass the PR author for filtering
-    const simplifiedComments = simplifyGitHubComments(comments, handledStatus, prAuthor);
-
-    // Return the simplified comments
+    // Return the PR comments data
     res.status(200).json({
       repository: repo,
-      branch: branch,
-      prAuthor: prAuthor,
-      comments: simplifiedComments,
+      branch: result.branch,
+      comments: result.comments,
+      stepsForward: result.stepsForward,
     });
   } catch (error) {
     console.error('Error fetching PR comments:', error);
     res.status(500).json({
       error: 'Failed to fetch PR comments',
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+});
+
+// New endpoint to mark comments as handled
+app.post('/mark-comments-handled', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { repo, fixedComments } = req.body as { repo: string; fixedComments: FixedComment[] };
+
+    if (!repo) {
+      res.status(400).json({
+        error: 'Missing required parameter: repo',
+      });
+
+      return;
+    }
+
+    if (!fixedComments || !Array.isArray(fixedComments) || fixedComments.length === 0) {
+      res.status(400).json({
+        error: 'Missing or invalid fixedComments array',
+      });
+
+      return;
+    }
+
+    // Validate each fixed comment entry
+    for (const comment of fixedComments) {
+      if (typeof comment.fixedCommentId !== 'number' || !comment.fixSummary) {
+        res.status(400).json({
+          error: 'Each fixedComment must have a fixedCommentId (number) and fixSummary (string)',
+        });
+
+        return;
+      }
+    }
+
+    console.log(`Processing mark-comments-handled request for ${repo}, ${fixedComments.length} comments`);
+
+    // Use the service layer to mark comments as handled
+    const result = await handleFixedComments({
+      repo,
+      fixedComments,
+    });
+
+    // Return the results
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error marking comments as handled:', error);
+    res.status(500).json({
+      error: 'Failed to mark comments as handled',
       details: error instanceof Error ? error.message : String(error),
     });
   }
