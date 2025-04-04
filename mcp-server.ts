@@ -53,7 +53,8 @@ const transport = new StdioServerTransport();
       tools: [
         {
           name: 'fix_pr_comments',
-          description: 'Get comments from a GitHub pull request, filtering based on status and author',
+          description:
+            'Fetching all of the comments from a GitHub pull request, filtering based on status and author and returning them in a simplified format that makes it easier to handle them. you will need to provide ONLY the repo name and branch name.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -66,11 +67,6 @@ const transport = new StdioServerTransport();
                 type: 'string',
                 description:
                   'The branch name of the pull request. if the user didn\'t provide it, you can take it from the CLI using "git branch --show-current"',
-              },
-              prAuthor: {
-                type: 'string',
-                description:
-                  'Optional: The GitHub username of the PR author. If not provided, it will be auto-detected',
               },
             },
             required: ['repo', 'branch'],
