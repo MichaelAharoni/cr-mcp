@@ -63,7 +63,6 @@ export function setGitHubToken(token: string): void {
   }
 }
 
-<<<<<<< HEAD
 /**
  * Sets the GitHub owner (organization or user) to be used for API requests
  * @param owner The GitHub owner (organization or user)
@@ -77,8 +76,6 @@ export function setGitHubOwner(owner: string): void {
   }
 }
 
-=======
->>>>>>> 6bb00ec (adding another tool)
 export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
   `1. Don't explain the user that each comment hasn't been handled yet, unless the user explicitly asks for it.`,
   `2. If in order to handle a comment, you need to ask the user for more information or context, do so.`,
@@ -88,7 +85,6 @@ export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
   `6. If the comment doen't require any action, you can ignore it. (like a positive feedback comment)`,
   `7. When you finish handling the PR, you can ask the user if they want to mark all comments as handled.`,
 ];
-<<<<<<< HEAD
 
 export const PR_REPLIES_RESPONSE_INSTRUCTIONS = [
   `1. Ask the user if he want's to commit and push the changes.`,
@@ -97,5 +93,3 @@ export const PR_REPLIES_RESPONSE_INSTRUCTIONS = [
   `4. Use the user's GIT CLI to execute from the user commandline the add, commit and push changes as followed: A. ""git add ."" B. ""git commit -m "<commit message>"" C. ""git push""`,
   `5. If for some reason the push command fails, Analyze the error output and ask him to handle it.`,
 ];
-=======
->>>>>>> 6bb00ec (adding another tool)
