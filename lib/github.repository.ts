@@ -74,13 +74,9 @@ export const GitHubRepository = {
   /**
    * Fetch detailed information about a comment
    */
-  async fetchCommentDetails(
-    owner: string,
-    repo: string,
-    commentId: number
-  ): Promise<GitHubComment> {
+  async fetchCommentDetails(owner: string, repo: string, commentId: number): Promise<GitHubComment> {
     const path = `/repos/${owner}/${repo}/pulls/comments/${commentId}`;
-    
+
     return githubApiRequest<GitHubComment>(path);
   },
 
@@ -88,14 +84,14 @@ export const GitHubRepository = {
    * Reply to a pull request comment
    */
   async replyToComment(
-    owner: string, 
-    repo: string, 
-    pullNumber: number, 
-    commentId: number, 
+    owner: string,
+    repo: string,
+    pullNumber: number,
+    commentId: number,
     body: string
   ): Promise<unknown> {
     const path = `/repos/${owner}/${repo}/pulls/${pullNumber}/comments/${commentId}/replies`;
-    
+
     return githubApiRequest(path, {
       method: 'POST',
       body: { body },
@@ -173,7 +169,7 @@ export const GitHubRepository = {
         return parseInt(match[1], 10);
       }
     }
-    
+
     return undefined;
   },
 };

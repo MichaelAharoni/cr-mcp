@@ -32,7 +32,7 @@ export interface GitHubComment {
   side?: string;
   pull_request_review_id?: number;
   original_position?: number | null;
-  pull_request_url: string; // URL to the pull request this comment belongs to
+  pull_request_url: string;
 }
 
 /**
@@ -116,4 +116,8 @@ export interface MarkCommentsResponse {
     successful: number;
     failed: number;
   };
+  /**
+   * Steps forward for the user
+   */
+  stepsForward: string[];
 }

@@ -1,4 +1,4 @@
-import { DEFAULT_OWNER, BRANCH_TYPES, PR_COMMENTS_RESPONSE_INSTRUCTIONS } from './constants/github.constants';
+import { DEFAULT_OWNER, PR_COMMENTS_RESPONSE_INSTRUCTIONS } from './constants/github.constants';
 import {
   BranchDetails,
   GitHubComment,
@@ -7,7 +7,7 @@ import {
   FixedComment,
   MarkCommentsResponse,
 } from './types/github.types';
-import { logger } from './constants';
+import { logger, PR_REPLIES_RESPONSE_INSTRUCTIONS } from './constants';
 import { simplifyGitHubComments } from './comments.helper';
 import { SimplifiedComment } from './types';
 import { GitHubRepository } from './github.repository';
@@ -102,6 +102,7 @@ export function processHandledCommentResults(
       successful,
       failed,
     },
+    stepsForward: PR_REPLIES_RESPONSE_INSTRUCTIONS,
   };
 }
 
@@ -308,6 +309,3 @@ export async function fetchPullRequestFiles(repo: string, pullNumber: number): P
 
   return extractFilenames(files);
 }
-
-// Export constants for use elsewhere
-export { DEFAULT_OWNER, BRANCH_TYPES };

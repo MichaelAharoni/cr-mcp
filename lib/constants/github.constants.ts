@@ -63,3 +63,11 @@ export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
   `6. If the comment doen't require any action, you can ignore it. (like a positive feedback comment)`,
   `7. When you finish handling the PR, you can ask the user if they want to mark all comments as handled.`,
 ];
+
+export const PR_REPLIES_RESPONSE_INSTRUCTIONS = [
+  `1. Ask the user if he want's to commit and push the changes.`,
+  `2. If the user wants to commit and push the changes, Suggest him a suitable commit message.`,
+  `3. If the user doesn't want your suggestion, ask him to provide a commit message.`,
+  `4. Use the user's GIT CLI to execute from the user commandline the add, commit and push changes as followed: A. ""git add ."" B. ""git commit -m "<commit message>"" C. ""git push""`,
+  `5. If for some reason the push command fails, Analyze the error output and ask him to handle it.`,
+];
