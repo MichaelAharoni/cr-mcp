@@ -36,7 +36,6 @@ module.exports = [
       '@typescript-eslint/explicit-function-return-type': 'error', // Suggests enforcing return types on functions
       '@typescript-eslint/explicit-module-boundary-types': 'error', // Suggests enforcing explicit types on exported functions' and classes' parameters and return types
       '@typescript-eslint/no-explicit-any': 'error', // Allows the use of `any` type (you can change this to "error" to disallow `any`)
-      'object-property-newline': 'error',
       'padding-line-between-statements': [
         'error',
         { blankLine: 'always', prev: '*', next: 'return' },

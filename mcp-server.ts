@@ -5,7 +5,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema, McpError } from '@modelcontextprotocol/sdk/types.js';
 
 // Import necessary services and utilities
-import { setDebugMode, logger, MESSAGE_DICTIONARY } from './lib/constants';
+import { setDebugMode, logger, MESSAGE_DICTIONARY } from './lib/constants/common.constants';
 import { TOOL_NAMES, PREFIXED_TOOL_NAMES, STATUS_CODES } from './lib/constants/server.constants';
 import { setGitHubToken, setGitHubOwner } from './lib/constants/github.constants';
 import { getPullRequestComments, handleFixedComments } from './lib/github.service';
@@ -21,12 +21,12 @@ setDebugMode(!!cliOptions.debug);
 
 // Check if GitHub API key and owner are provided
 if (!cliOptions.gh_api_key) {
-  console.error('Error: GitHub API key is required. Please provide it using the --gh_api_key flag.');
+  console.error(MESSAGE_DICTIONARY.MISSING_API_KEY);
   process.exit(1);
 }
 
 if (!cliOptions.gh_owner) {
-  console.error('Error: GitHub owner is required. Please provide it using the --gh_owner flag.');
+  console.error(MESSAGE_DICTIONARY.MISSING_OWNER);
   process.exit(1);
 }
 
@@ -35,17 +35,7 @@ setGitHubToken(cliOptions.gh_api_key);
 setGitHubOwner(cliOptions.gh_owner);
 
 // Create the MCP server
-const server = new Server(
-  {
-    name: 'GitHub PR Comments MCP Server',
-    version: '1.0.0',
-  },
-  {
-    capabilities: {
-      tools: {},
-    },
-  }
-);
+const server = new Server({ name: 'GitHub PR Comments MCP Server', version: '1.0.0' }, { capabilities: { tools: {} } });
 
 // Create stdio transport for VS Code integration
 const transport = new StdioServerTransport();
@@ -131,32 +121,19 @@ const transport = new StdioServerTransport();
         repo,
         branch,
         prAuthor: explicitPrAuthor,
-      } = request.params.arguments as {
-        repo: string;
-        branch: string;
-        prAuthor?: string;
-      };
+      } = request.params.arguments as { repo: string; branch: string; prAuthor?: string };
 
       // Validate required parameters
       validateFixPrCommentsInput(repo, branch);
 
       try {
         // Use the service layer to handle the business logic
-        const result = await getPullRequestComments({
-          repo,
-          branch,
-          explicitPrAuthor,
-        });
+        const result = await getPullRequestComments({ repo, branch, explicitPrAuthor });
 
         // Return the result in the expected format
         return {
           isError: false,
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -173,30 +150,19 @@ const transport = new StdioServerTransport();
       toolName === PREFIXED_TOOL_NAMES.MARK_COMMENTS_AS_HANDLED
     ) {
       // Extract parameters from the request
-      const { repo, fixedComments } = request.params.arguments as {
-        repo: string;
-        fixedComments: FixedComment[];
-      };
+      const { repo, fixedComments } = request.params.arguments as { repo: string; fixedComments: FixedComment[] };
 
       // Validate required parameters using the validator service
       validateMarkCommentsInput(repo, fixedComments);
 
       try {
         // Use the service layer to handle the business logic
-        const response = await handleFixedComments({
-          repo,
-          fixedComments,
-        });
+        const response = await handleFixedComments({ repo, fixedComments });
 
         // Return the result in the expected format
         return {
           isError: false,
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
+          content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -205,48 +171,37 @@ const transport = new StdioServerTransport();
       }
     } else if (request.params.name === 'mark_comments_as_handled') {
       // Extract parameters from the request
-      const { repo, fixedComments } = request.params.arguments as {
-        repo: string;
-        fixedComments: FixedComment[];
-      };
+      const { repo, fixedComments } = request.params.arguments as { repo: string; fixedComments: FixedComment[] };
 
       // Validate required parameters
       if (!repo) {
-        throw new McpError(400, 'Missing required parameter: repo');
+        throw new McpError(STATUS_CODES.BAD_REQUEST, MESSAGE_DICTIONARY.MISSING_REPO_PARAM);
       }
 
       if (!fixedComments || !Array.isArray(fixedComments) || fixedComments.length === 0) {
-        throw new McpError(400, 'Missing or invalid fixedComments array');
+        throw new McpError(STATUS_CODES.BAD_REQUEST, MESSAGE_DICTIONARY.MISSING_INVALID_COMMENTS);
       }
 
       // Validate each fixed comment entry
       for (const comment of fixedComments) {
         if (typeof comment.fixedCommentId !== 'number' || !comment.fixSummary) {
-          throw new McpError(400, 'Each fixedComment must have a fixedCommentId (number) and fixSummary (string)');
+          throw new McpError(STATUS_CODES.BAD_REQUEST, MESSAGE_DICTIONARY.INVALID_COMMENT_DATA);
         }
       }
 
       try {
         // Use the service layer to handle the business logic
-        const response = await handleFixedComments({
-          repo,
-          fixedComments,
-        });
+        const response = await handleFixedComments({ repo, fixedComments });
 
         // Return the result in the expected format
         return {
           isError: false,
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
+          content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        logger.error(`Error marking comments as handled: ${message}`);
-        throw new McpError(500, `Failed to mark comments as handled: ${message}`);
+        logger.error(`${MESSAGE_DICTIONARY.MARK_COMMENTS_ERROR} ${message}`);
+        throw new McpError(STATUS_CODES.INTERNAL_SERVER_ERROR, `${MESSAGE_DICTIONARY.FAILED_MARK_COMMENTS} ${message}`);
       }
     } else {
       // If the tool name doesn't match any of our tools

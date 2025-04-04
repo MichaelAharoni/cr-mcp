@@ -47,10 +47,7 @@ export const GitHubRepository = {
   ): Promise<unknown> {
     const path = `/repos/${owner}/${repo}/pulls/${pullNumber}/comments/${commentId}/replies`;
 
-    return githubApiRequest(path, {
-      method: 'POST',
-      body: { body },
-    });
+    return githubApiRequest(path, { method: 'POST', body: { body } });
   },
 
   /**
@@ -62,9 +59,7 @@ export const GitHubRepository = {
     return githubApiRequest(path, {
       method: 'POST',
       body: { content: reaction },
-      headers: {
-        Accept: 'application/vnd.github.squirrel-girl-preview+json',
-      },
+      headers: { Accept: 'application/vnd.github.squirrel-girl-preview+json' },
     });
   },
 

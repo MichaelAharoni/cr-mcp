@@ -1,17 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { GITHUB_API_URL, getGitHubHeaders, PR_REPLIES_RESPONSE_INSTRUCTIONS } from '../constants/github.constants';
-import { logger } from '../constants';
+import { logger, MESSAGE_DICTIONARY } from '../constants/common.constants';
 import { GitHubComment, GitHubPullRequest, BranchDetails, MarkCommentsResponse } from '../types/github.types';
-
-/**
- * GitHub API error messages
- */
-export const API_ERRORS = {
-  REQUEST_FAILED: 'GitHub API request failed:',
-  API_ERROR: 'GitHub API error:',
-  ERROR_DETAILS: 'Error details:',
-  REQUEST_ERROR: 'Error in GitHub API request to',
-};
 
 /**
  * Makes a GitHub API request using axios
@@ -46,13 +36,13 @@ export async function githubApiRequest<T>(
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      logger.error(`${API_ERRORS.API_ERROR} ${error.response?.status} ${error.response?.statusText}`);
-      logger.error(`${API_ERRORS.ERROR_DETAILS} ${JSON.stringify(error.response?.data || {})}`);
-      throw new Error(`${API_ERRORS.API_ERROR} ${error.response?.status} ${error.response?.statusText}`);
+      logger.error(`${MESSAGE_DICTIONARY.API_ERROR} ${error.response?.status} ${error.response?.statusText}`);
+      logger.error(`${MESSAGE_DICTIONARY.ERROR_DETAILS} ${JSON.stringify(error.response?.data || {})}`);
+      throw new Error(`${MESSAGE_DICTIONARY.API_ERROR} ${error.response?.status} ${error.response?.statusText}`);
     }
 
-    logger.error(`${API_ERRORS.REQUEST_ERROR} ${path}:`, error);
-    throw new Error(`${API_ERRORS.REQUEST_FAILED} ${error instanceof Error ? error.message : String(error)}`);
+    logger.error(`${MESSAGE_DICTIONARY.REQUEST_ERROR} ${path}:`, error);
+    throw new Error(`${MESSAGE_DICTIONARY.REQUEST_FAILED} ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 

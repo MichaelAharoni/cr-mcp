@@ -1,9 +1,10 @@
 import { PR_COMMENTS_RESPONSE_INSTRUCTIONS, getGitHubOwner } from './constants/github.constants';
 import { BranchDetails, GitHubComment, GitHubReview, FixedComment, MarkCommentsResponse } from './types/github.types';
-import { logger, MESSAGE_DICTIONARY } from './constants';
+import { logger, MESSAGE_DICTIONARY } from './constants/common.constants';
 import { simplifyGitHubComments } from './helpers/comments.helper';
 import { SimplifiedComment } from './types';
 import { GitHubRepository } from './github.repository';
+import { validatePullRequestExists } from './helpers/validator.helper';
 import {
   cleanRepositoryName,
   transformBranchData,
@@ -11,7 +12,6 @@ import {
   findPullRequestByBranch,
   processHandledCommentResults,
 } from './helpers/utils.helper';
-import { validatePullRequestExists } from './helpers/validator.helper';
 
 /**
  * Determine which comments are resolved or outdated
@@ -52,11 +52,7 @@ export async function fetchPullRequestComments({
   owner: string;
   repo: string;
   branch: string;
-}): Promise<{
-  comments: GitHubComment[];
-  handledStatus: Map<number, boolean>;
-  prAuthor: string;
-}> {
+}): Promise<{ comments: GitHubComment[]; handledStatus: Map<number, boolean>; prAuthor: string }> {
   logger.info(`Fetching pull request comments for ${owner}/${repo}, branch: ${branch}`);
 
   // Step 1: Get all pull requests for the repository
@@ -87,11 +83,7 @@ export async function fetchPullRequestComments({
   // Step 5: Determine which comments are resolved or outdated
   const handledStatus = determineHandledComments(allComments, reviews);
 
-  return {
-    comments: allComments,
-    handledStatus,
-    prAuthor,
-  };
+  return { comments: allComments, handledStatus, prAuthor };
 }
 
 /**
@@ -191,11 +183,7 @@ export async function getPullRequestComments(options: {
     comments,
     handledStatus,
     prAuthor: detectedPrAuthor,
-  } = await fetchPullRequestComments({
-    repo,
-    owner: getGitHubOwner(),
-    branch,
-  });
+  } = await fetchPullRequestComments({ repo, owner: getGitHubOwner(), branch });
 
   // Use explicitly provided PR author if available, otherwise use the one detected from GitHub
   const prAuthor = explicitPrAuthor || detectedPrAuthor;
@@ -210,11 +198,7 @@ export async function getPullRequestComments(options: {
   const simplifiedComments = simplifyGitHubComments(comments, handledStatus, prAuthor);
   logger.info('Simplified comments:', simplifiedComments);
 
-  return {
-    branch: branch,
-    comments: simplifiedComments,
-    stepsForward: PR_COMMENTS_RESPONSE_INSTRUCTIONS,
-  };
+  return { branch: branch, comments: simplifiedComments, stepsForward: PR_COMMENTS_RESPONSE_INSTRUCTIONS };
 }
 
 /**
@@ -237,11 +221,7 @@ export async function handleFixedComments(options: {
   );
 
   // Mark comments as handled using the repository function
-  const results = await markCommentsAsHandled({
-    owner: getGitHubOwner(),
-    repo,
-    fixedComments,
-  });
+  const results = await markCommentsAsHandled({ owner: getGitHubOwner(), repo, fixedComments });
 
   // Process and return the results
   return processHandledCommentResults(results);

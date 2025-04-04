@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { PORT, MESSAGE_DICTIONARY, STATUS_CODES } from './lib/constants/server.constants';
 import { setGitHubToken, setGitHubOwner } from './lib/constants/github.constants';
-import { logger, setDebugMode } from './lib/constants';
+import { logger, setDebugMode } from './lib/constants/common.constants';
 import { getPullRequestComments, handleFixedComments } from './lib/github.service';
 import { parseCliArguments } from './lib/cli';
 import { FixedComment } from './lib/types/github.types';
