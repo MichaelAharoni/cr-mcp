@@ -7,7 +7,6 @@ import { GitHubRepository } from './github.repository';
 import {
   cleanRepositoryName,
   transformBranchData,
-  extractFilenames,
   formatHandledReply,
   findPullRequestByBranch,
   processHandledCommentResults,
@@ -268,6 +267,3 @@ export async function fetchBranches(repo: string): Promise<BranchDetails[]> {
 export function getFullRepoName(owner: string, repo: string): string {
   return `${owner}/${repo}`;
 }
-
-// Export constants for use elsewhere
-export { DEFAULT_OWNER, BRANCH_TYPES };
