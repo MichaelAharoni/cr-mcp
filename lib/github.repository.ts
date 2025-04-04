@@ -72,11 +72,30 @@ export const GitHubRepository = {
   },
 
   /**
+   * Fetch detailed information about a comment
+   */
+  async fetchCommentDetails(
+    owner: string,
+    repo: string,
+    commentId: number
+  ): Promise<GitHubComment> {
+    const path = `/repos/${owner}/${repo}/pulls/comments/${commentId}`;
+    
+    return githubApiRequest<GitHubComment>(path);
+  },
+
+  /**
    * Reply to a pull request comment
    */
-  async replyToComment(owner: string, repo: string, commentId: number, body: string): Promise<unknown> {
-    const path = `/repos/${owner}/${repo}/pulls/comments/${commentId}/replies`;
-
+  async replyToComment(
+    owner: string, 
+    repo: string, 
+    pullNumber: number, 
+    commentId: number, 
+    body: string
+  ): Promise<unknown> {
+    const path = `/repos/${owner}/${repo}/pulls/${pullNumber}/comments/${commentId}/replies`;
+    
     return githubApiRequest(path, {
       method: 'POST',
       body: { body },
@@ -141,5 +160,20 @@ export const GitHubRepository = {
     const path = `/repos/${owner}/${repo}/issues/${pullNumber}/comments`;
 
     return githubApiRequest(path);
+  },
+
+  /**
+   * Extract pull request number from comment details
+   * Returns the pull request number or undefined if not found
+   */
+  extractPullNumberFromComment(comment: GitHubComment): number | undefined {
+    if (comment?.pull_request_url) {
+      const match = comment.pull_request_url.match(/\/pulls\/(\d+)$/);
+      if (match && match[1]) {
+        return parseInt(match[1], 10);
+      }
+    }
+    
+    return undefined;
   },
 };

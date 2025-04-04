@@ -59,11 +59,13 @@ const transport = new StdioServerTransport();
             properties: {
               repo: {
                 type: 'string',
-                description: 'The GitHub repository name to fetch PR comments from',
+                description:
+                  'The GitHub repository name to fetch PR comments from (You can take it from the root package.json.name, if after trying you get an error, ask the user to provide it)',
               },
               branch: {
                 type: 'string',
-                description: 'The branch name of the pull request',
+                description:
+                  'The branch name of the pull request. if the user didn\'t provide it, you can take it from the CLI using "git branch --show-current"',
               },
               prAuthor: {
                 type: 'string',
@@ -96,14 +98,14 @@ const transport = new StdioServerTransport();
                     },
                     fixSummary: {
                       type: 'string',
-                      description: 'A concise summary (3-15 words) of how the comment was addressed',
+                      description: 'Optional: A concise summary (3-15 words) of how the comment was addressed',
                     },
                     reaction: {
                       type: 'string',
                       description: 'Optional: The reaction to add (e.g., rocket, heart, hooray). Default: rocket',
                     },
                   },
-                  required: ['fixedCommentId', 'fixSummary'],
+                  required: ['fixedCommentId'],
                 },
               },
             },
@@ -174,8 +176,8 @@ const transport = new StdioServerTransport();
 
       // Validate each fixed comment entry
       for (const comment of fixedComments) {
-        if (typeof comment.fixedCommentId !== 'number' || !comment.fixSummary) {
-          throw new McpError(400, 'Each fixedComment must have a fixedCommentId (number) and fixSummary (string)');
+        if (typeof comment.fixedCommentId !== 'number') {
+          throw new McpError(400, 'Each fixedComment must have a fixedCommentId (number)');
         }
       }
 

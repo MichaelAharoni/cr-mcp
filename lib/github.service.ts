@@ -178,11 +178,25 @@ export async function markCommentsAsHandled({
       const { fixedCommentId, fixSummary, reaction = 'rocket' } = comment;
 
       try {
-        // Step 1: Reply to the comment
-        const replyBody = formatHandledReply(fixSummary);
-        await GitHubRepository.replyToComment(owner, repo, fixedCommentId, replyBody);
+        // Step 1: Get the comment details to extract the pull request number
+        const commentDetails = await GitHubRepository.fetchCommentDetails(owner, repo, fixedCommentId);
 
-        // Step 2: Add a reaction to the comment
+        // Step 2: Extract the pull request number from the comment details
+        const pullNumber = GitHubRepository.extractPullNumberFromComment(commentDetails);
+
+        if (!pullNumber) {
+          return {
+            commentId: fixedCommentId,
+            success: false,
+            message: `Failed to extract pull request number for comment #${fixedCommentId}`,
+          };
+        }
+
+        // Step 3: Reply to the comment with pull number
+        const replyBody = formatHandledReply(fixSummary);
+        await GitHubRepository.replyToComment(owner, repo, pullNumber, fixedCommentId, replyBody);
+
+        // Step 4: Add a reaction to the comment
         await GitHubRepository.addReactionToComment(owner, repo, fixedCommentId, reaction);
 
         return {
