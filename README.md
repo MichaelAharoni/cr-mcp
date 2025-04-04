@@ -15,12 +15,14 @@ npm run build
 ### Running the server locally
 
 ```bash
-npm start
+npm start --gh_api_key=your_github_api_key_here --gh_owner=your_github_owner_here
 ```
 
-### Running with a custom GitHub API key
+### Required Parameters
 
-You can provide your GitHub API key as a command line argument when starting the server:
+#### GitHub API Key
+
+You must provide your GitHub API key as a command line argument when starting the server:
 
 ```bash
 node dist/server.js --gh_api_key=your_github_api_key_here
@@ -32,9 +34,25 @@ Or using the short form:
 node dist/server.js -k your_github_api_key_here
 ```
 
-### Custom port
+#### GitHub Owner
 
-You can also specify a custom port to run the server on:
+You must specify the GitHub owner (organization or user) as a command line argument:
+
+```bash
+node dist/server.js --gh_owner=your_github_owner_here
+```
+
+Or using the short form:
+
+```bash
+node dist/server.js -o your_github_owner_here
+```
+
+### Optional Parameters
+
+#### Custom port
+
+You can optionally specify a custom port to run the server on:
 
 ```bash
 node dist/server.js --port=4000
@@ -46,12 +64,26 @@ Or using the short form:
 node dist/server.js -p 4000
 ```
 
+#### Debug mode
+
+You can enable debug mode for additional logging:
+
+```bash
+node dist/server.js --debug
+```
+
+Or using the short form:
+
+```bash
+node dist/server.js -d
+```
+
 ### Combined options
 
 Options can be combined:
 
 ```bash
-node dist/server.js --gh_api_key=your_github_api_key_here --port=4000
+node dist/server.js --gh_api_key=your_github_api_key_here --gh_owner=your_github_owner_here --port=4000 --debug
 ```
 
 ### Using as an installed package
@@ -59,7 +91,7 @@ node dist/server.js --gh_api_key=your_github_api_key_here --port=4000
 After installing the package globally or via npx:
 
 ```bash
-npx cr-mcp --gh_api_key=your_github_api_key_here
+npx cr-mcp --gh_api_key=your_github_api_key_here --gh_owner=your_github_owner_here
 ```
 
 ## API Endpoints

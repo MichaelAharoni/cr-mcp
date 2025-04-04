@@ -1,8 +1,9 @@
 /**
  * GitHub API configuration
  */
-// Token must be provided via CLI arguments
+// Token and owner must be provided via CLI arguments
 let githubToken = '';
+let githubOwner = '';
 export const GITHUB_API_URL = 'https://api.github.com';
 
 // Import logger for debug messages
@@ -31,9 +32,17 @@ export const getGitHubHeaders = (): GitHubHeaders => {
 };
 
 /**
- * Default organization for GitHub API requests
+ * Getter for the GitHub owner (organization or user)
+ * @returns The configured GitHub owner
+ * @throws Error if owner is not set
  */
-export const DEFAULT_OWNER = 'Natural-Intelligence';
+export function getGitHubOwner(): string {
+  if (!githubOwner) {
+    throw new Error('GitHub owner is required. Please provide it using the --gh_owner flag.');
+  }
+  
+  return githubOwner;
+}
 
 /**
  * Constants for branch types
@@ -51,6 +60,19 @@ export function setGitHubToken(token: string): void {
   if (token) {
     githubToken = token;
     logger.info('GitHub API token has been set from CLI arguments');
+  }
+}
+
+/**
+ * Sets the GitHub owner (organization or user) to be used for API requests
+ * @param owner The GitHub owner (organization or user)
+ */
+export function setGitHubOwner(owner: string): void {
+  if (owner) {
+    githubOwner = owner;
+    logger.info('GitHub owner has been set from CLI arguments');
+  } else {
+    throw new Error('GitHub owner cannot be empty');
   }
 }
 

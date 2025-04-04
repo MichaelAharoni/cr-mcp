@@ -3,6 +3,7 @@ import { hideBin } from 'yargs/helpers';
 
 interface CliOptions {
   gh_api_key: string;
+  gh_owner: string;
   port?: number;
   debug?: boolean;
 }
@@ -16,6 +17,13 @@ export function parseCliArguments(): CliOptions {
     .option('gh_api_key', {
       alias: 'k',
       describe: 'GitHub API key to use for requests',
+      type: 'string',
+      demandOption: true,
+      requiresArg: true,
+    })
+    .option('gh_owner', {
+      alias: 'o',
+      describe: 'GitHub owner (organization or user) to use for requests',
       type: 'string',
       demandOption: true,
       requiresArg: true,
@@ -37,6 +45,7 @@ export function parseCliArguments(): CliOptions {
 
   return {
     gh_api_key: argv.gh_api_key as string,
+    gh_owner: argv.gh_owner as string,
     port: argv.port,
     debug: argv.debug,
   };

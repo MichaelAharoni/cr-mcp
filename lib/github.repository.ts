@@ -1,50 +1,5 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { GITHUB_API_URL, getGitHubHeaders } from './constants/github.constants';
-import { logger } from './constants';
 import { GitHubComment, GitHubPullRequest, GitHubReview } from './types/github.types';
-
-/**
- * Makes a GitHub API request using axios
- */
-async function githubApiRequest<T>(
-  path: string,
-  options: { method?: string; body?: unknown; headers?: Record<string, string> } = {}
-): Promise<T> {
-  try {
-    const url = `${GITHUB_API_URL}${path}`;
-    logger.debug(`Making GitHub API request to: ${url}`);
-
-    // Use dynamic headers to always get the current token
-    const headers = {
-      ...getGitHubHeaders(),
-      ...(options.headers || {}),
-    };
-
-    const method = options.method || 'GET';
-    const config: AxiosRequestConfig = {
-      method,
-      url,
-      headers,
-    };
-
-    if (options.body) {
-      config.data = options.body;
-    }
-
-    const response: AxiosResponse<T> = await axios(config);
-
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      logger.error(`GitHub API error: ${error.response?.status} ${error.response?.statusText}`);
-      logger.error(`Error details: ${JSON.stringify(error.response?.data || {})}`);
-      throw new Error(`GitHub API error: ${error.response?.status} ${error.response?.statusText}`);
-    }
-
-    logger.error(`Error in GitHub API request to ${path}:`, error);
-    throw new Error(`GitHub API request failed: ${error instanceof Error ? error.message : String(error)}`);
-  }
-}
+import { githubApiRequest, extractPullNumberFromComment } from './utils';
 
 /**
  * Repository API endpoints
@@ -162,14 +117,5 @@ export const GitHubRepository = {
    * Extract pull request number from comment details
    * Returns the pull request number or undefined if not found
    */
-  extractPullNumberFromComment(comment: GitHubComment): number | undefined {
-    if (comment?.pull_request_url) {
-      const match = comment.pull_request_url.match(/\/pulls\/(\d+)$/);
-      if (match && match[1]) {
-        return parseInt(match[1], 10);
-      }
-    }
-
-    return undefined;
-  },
+  extractPullNumberFromComment,
 };

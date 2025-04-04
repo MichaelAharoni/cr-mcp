@@ -1,50 +1,27 @@
-import { DEFAULT_OWNER, PR_COMMENTS_RESPONSE_INSTRUCTIONS } from './constants/github.constants';
+import {
+  PR_COMMENTS_RESPONSE_INSTRUCTIONS,
+  getGitHubOwner
+} from './constants/github.constants';
 import {
   BranchDetails,
   GitHubComment,
   GitHubReview,
-  GitHubPullRequest,
   FixedComment,
   MarkCommentsResponse,
 } from './types/github.types';
-import { logger, PR_REPLIES_RESPONSE_INSTRUCTIONS } from './constants';
+import { logger, MESSAGE_DICTIONARY } from './constants';
 import { simplifyGitHubComments } from './comments.helper';
 import { SimplifiedComment } from './types';
 import { GitHubRepository } from './github.repository';
-
-/**
- * Transform GitHub API branch data into simplified BranchDetails
- */
-export function transformBranchData(
-  branches: { name: string; commit: { sha: string }; protected: boolean }[]
-): BranchDetails[] {
-  return branches.map((branch) => ({
-    name: branch.name,
-    sha: branch.commit.sha,
-    protected: branch.protected,
-  }));
-}
-
-/**
- * Extract filenames from pull request files response
- */
-export function extractFilenames(files: { filename: string }[]): string[] {
-  return files.map((file) => file.filename);
-}
-
-/**
- * Get the full repository name (owner/repo)
- */
-export function getFullRepoName(owner: string, repo: string): string {
-  return `${owner}/${repo}`;
-}
-
-/**
- * Format a reply for a handled comment
- */
-export function formatHandledReply(fixSummary: string): string {
-  return `Done - ${fixSummary} (By AI)`;
-}
+import { 
+  cleanRepositoryName, 
+  transformBranchData, 
+  extractFilenames, 
+  formatHandledReply, 
+  findPullRequestByBranch,
+  processHandledCommentResults
+} from './utils';
+import { validatePullRequestExists } from './validator.service';
 
 /**
  * Determine which comments are resolved or outdated
@@ -75,38 +52,6 @@ export function determineHandledComments(comments: GitHubComment[], reviews: Git
 }
 
 /**
- * Find pull request by branch name
- */
-export function findPullRequestByBranch(
-  pullRequests: GitHubPullRequest[],
-  branchName: string
-): GitHubPullRequest | null {
-  const matchingPR = pullRequests.find((pr) => pr.head.ref === branchName);
-
-  return matchingPR || null;
-}
-
-/**
- * Process results of marking comments as handled
- */
-export function processHandledCommentResults(
-  results: Array<{ commentId: number; success: boolean; message: string }>
-): MarkCommentsResponse {
-  const successful = results.filter((result) => result.success).length;
-  const failed = results.length - successful;
-
-  return {
-    results,
-    summary: {
-      total: results.length,
-      successful,
-      failed,
-    },
-    stepsForward: PR_REPLIES_RESPONSE_INSTRUCTIONS,
-  };
-}
-
-/**
  * Fetch pull request comments and review information
  */
 export async function fetchPullRequestComments({
@@ -130,14 +75,14 @@ export async function fetchPullRequestComments({
   // Step 2: Find the matching pull request for the branch
   const pullRequest = findPullRequestByBranch(pullRequests, branch);
 
-  if (!pullRequest) {
-    throw new Error(`No open pull request found for branch: ${branch}`);
-  }
+  // Validate that a pull request was found
+  validatePullRequestExists(pullRequest, branch);
 
-  const pullNumber = pullRequest.number;
-  const prAuthor = pullRequest.user.login;
+  // At this point, pullRequest is guaranteed not to be null because validatePullRequestExists would throw an error
+  const pullNumber = pullRequest!.number;
+  const prAuthor = pullRequest!.user.login;
 
-  logger.info(`Found pull request #${pullNumber} for branch ${branch}`);
+  logger.info(MESSAGE_DICTIONARY.FOUND_PR_FOR_BRANCH.replace('%s', String(pullNumber)).replace('%s', branch));
 
   // Step 3: Fetch all comments from the pull request (both review comments and issue comments)
   const [reviewComments, issueComments, reviews] = await Promise.all([
@@ -171,7 +116,11 @@ export async function markCommentsAsHandled({
   repo: string;
   fixedComments: FixedComment[];
 }): Promise<Array<{ commentId: number; success: boolean; message: string }>> {
-  logger.info(`Marking ${fixedComments.length} comments as handled in ${owner}/${repo}`);
+  logger.info(
+    MESSAGE_DICTIONARY.MARKING_COMMENTS_HANDLED.replace('%s', String(fixedComments.length))
+      .replace('%s', owner)
+      .replace('%s', repo)
+  );
 
   // Process each fixed comment
   const results = await Promise.all(
@@ -189,7 +138,7 @@ export async function markCommentsAsHandled({
           return {
             commentId: fixedCommentId,
             success: false,
-            message: `Failed to extract pull request number for comment #${fixedCommentId}`,
+            message: MESSAGE_DICTIONARY.FAILED_EXTRACT_PR.replace('%s', String(fixedCommentId)),
           };
         }
 
@@ -205,15 +154,18 @@ export async function markCommentsAsHandled({
         return {
           commentId: fixedCommentId,
           success: true,
-          message: `Successfully marked comment #${fixedCommentId} as handled`,
+          message: MESSAGE_DICTIONARY.MARK_COMMENT_SUCCESS.replace('%s', String(fixedCommentId)),
         };
       } catch (error) {
-        logger.error(`Error marking comment #${fixedCommentId} as handled:`, error);
+        logger.error(MESSAGE_DICTIONARY.MARK_COMMENT_ERROR.replace('%s', String(fixedCommentId)), error);
 
         return {
           commentId: fixedCommentId,
           success: false,
-          message: `Failed to mark comment #${fixedCommentId} as handled: ${error instanceof Error ? error.message : String(error)}`,
+          message: MESSAGE_DICTIONARY.FAILED_MARK_COMMENT.replace('%s', String(fixedCommentId)).replace(
+            '%s',
+            error instanceof Error ? error.message : String(error)
+          ),
         };
       }
     })
@@ -235,9 +187,14 @@ export async function getPullRequestComments(options: {
   comments: SimplifiedComment[];
   stepsForward: string[];
 }> {
-  const { repo, branch, explicitPrAuthor } = options;
+  const { repo: rawRepo, branch, explicitPrAuthor } = options;
 
-  logger.info(`Fetching PR comments for ${DEFAULT_OWNER}/${repo}, branch: ${branch}`);
+  // Clean repository name (remove owner if present)
+  const repo = cleanRepositoryName(rawRepo);
+
+  logger.info(
+    MESSAGE_DICTIONARY.FETCHING_PR_COMMENTS.replace('%s', getGitHubOwner()).replace('%s', repo).replace('%s', branch)
+  );
 
   // Fetch PR comments from GitHub with handling status and PR author information
   const {
@@ -246,13 +203,18 @@ export async function getPullRequestComments(options: {
     prAuthor: detectedPrAuthor,
   } = await fetchPullRequestComments({
     repo,
-    owner: DEFAULT_OWNER,
+    owner: getGitHubOwner(),
     branch,
   });
 
   // Use explicitly provided PR author if available, otherwise use the one detected from GitHub
   const prAuthor = explicitPrAuthor || detectedPrAuthor;
-  logger.info(`Using PR author: ${prAuthor} (${explicitPrAuthor ? 'explicitly provided' : 'auto-detected'})`);
+  logger.info(
+    MESSAGE_DICTIONARY.USING_PR_AUTHOR.replace('%s', prAuthor).replace(
+      '%s',
+      explicitPrAuthor ? 'explicitly provided' : 'auto-detected'
+    )
+  );
 
   // Transform the comments to the simplified structure with proper handling status
   const simplifiedComments = simplifyGitHubComments(comments, handledStatus, prAuthor);
@@ -273,13 +235,20 @@ export async function handleFixedComments(options: {
   repo: string;
   fixedComments: FixedComment[];
 }): Promise<MarkCommentsResponse> {
-  const { repo, fixedComments } = options;
+  const { repo: rawRepo, fixedComments } = options;
 
-  logger.info(`Marking ${fixedComments.length} comments as handled in ${DEFAULT_OWNER}/${repo}`);
+  // Clean repository name (remove owner if present)
+  const repo = cleanRepositoryName(rawRepo);
+
+  logger.info(
+    MESSAGE_DICTIONARY.MARKING_COMMENTS_HANDLED.replace('%s', String(fixedComments.length))
+      .replace('%s', getGitHubOwner())
+      .replace('%s', repo)
+  );
 
   // Mark comments as handled using the repository function
   const results = await markCommentsAsHandled({
-    owner: DEFAULT_OWNER,
+    owner: getGitHubOwner(),
     repo,
     fixedComments,
   });
@@ -292,9 +261,12 @@ export async function handleFixedComments(options: {
  * Fetches repository branches
  */
 export async function fetchBranches(repo: string): Promise<BranchDetails[]> {
-  logger.info(`Fetching branches for ${DEFAULT_OWNER}/${repo}`);
+  // Clean repository name (remove owner if present)
+  const cleanRepo = cleanRepositoryName(repo);
 
-  const branches = await GitHubRepository.fetchRepoBranches(DEFAULT_OWNER, repo);
+  logger.info(`Fetching branches for ${getGitHubOwner()}/${cleanRepo}`);
+
+  const branches = await GitHubRepository.fetchRepoBranches(getGitHubOwner(), cleanRepo);
 
   return transformBranchData(branches);
 }
@@ -303,9 +275,12 @@ export async function fetchBranches(repo: string): Promise<BranchDetails[]> {
  * Fetches files affected by a pull request
  */
 export async function fetchPullRequestFiles(repo: string, pullNumber: number): Promise<string[]> {
-  logger.info(`Fetching files for PR #${pullNumber} in ${DEFAULT_OWNER}/${repo}`);
+  // Clean repository name (remove owner if present)
+  const cleanRepo = cleanRepositoryName(repo);
 
-  const files = await GitHubRepository.fetchPullRequestFiles(DEFAULT_OWNER, repo, pullNumber);
+  logger.info(`Fetching files for PR #${pullNumber} in ${getGitHubOwner()}/${cleanRepo}`);
+
+  const files = await GitHubRepository.fetchPullRequestFiles(getGitHubOwner(), cleanRepo, pullNumber);
 
   return extractFilenames(files);
 }

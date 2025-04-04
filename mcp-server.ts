@@ -5,11 +5,13 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema, McpError } from '@modelcontextprotocol/sdk/types.js';
 
 // Import necessary services and utilities
-import { setDebugMode, logger } from './lib/constants';
-import { setGitHubToken } from './lib/constants/github.constants';
+import { setDebugMode, logger, MESSAGE_DICTIONARY } from './lib/constants';
+import { TOOL_NAMES, PREFIXED_TOOL_NAMES, STATUS_CODES } from './lib/constants/server.constants';
+import { setGitHubToken, setGitHubOwner } from './lib/constants/github.constants';
 import { getPullRequestComments, handleFixedComments } from './lib/github.service';
 import { parseCliArguments } from './lib/cli';
 import { FixedComment } from './lib/types/github.types';
+import { validateFixPrCommentsInput, validateMarkCommentsInput } from './lib/validator.service';
 
 // Parse command line arguments
 const cliOptions = parseCliArguments();
@@ -17,27 +19,20 @@ const cliOptions = parseCliArguments();
 // Set debug mode based on CLI option
 setDebugMode(!!cliOptions.debug);
 
-// Check if GitHub API key is provided
+// Check if GitHub API key and owner are provided
 if (!cliOptions.gh_api_key) {
   console.error('Error: GitHub API key is required. Please provide it using the --gh_api_key flag.');
   process.exit(1);
 }
 
-// Set GitHub API key for use across the application
+if (!cliOptions.gh_owner) {
+  console.error('Error: GitHub owner is required. Please provide it using the --gh_owner flag.');
+  process.exit(1);
+}
+
+// Set GitHub API key and owner for use across the application
 setGitHubToken(cliOptions.gh_api_key);
-
-// Define tool names without prefix for better readability
-const TOOL_NAMES = {
-  FIX_PR_COMMENTS: 'fix_pr_comments',
-  MARK_COMMENTS_AS_HANDLED: 'mark_comments_as_handled'
-};
-
-// Define prefixed versions of the tool names (how VS Code will call them)
-const PREFIX = '9f1_';
-const PREFIXED_TOOL_NAMES = {
-  FIX_PR_COMMENTS: `${PREFIX}${TOOL_NAMES.FIX_PR_COMMENTS}`,
-  MARK_COMMENTS_AS_HANDLED: `${PREFIX}${TOOL_NAMES.MARK_COMMENTS_AS_HANDLED}`
-};
+setGitHubOwner(cliOptions.gh_owner);
 
 // Create the MCP server
 const server = new Server(
@@ -128,7 +123,7 @@ const transport = new StdioServerTransport();
   // Handle tool calls - we need to check for both prefixed and non-prefixed versions
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const toolName = request.params.name;
-    
+
     // Check if this is the fix_pr_comments tool (with or without prefix)
     if (toolName === TOOL_NAMES.FIX_PR_COMMENTS || toolName === PREFIXED_TOOL_NAMES.FIX_PR_COMMENTS) {
       // Extract parameters from the request
@@ -143,9 +138,7 @@ const transport = new StdioServerTransport();
       };
 
       // Validate required parameters
-      if (!repo || !branch) {
-        throw new McpError(400, 'Missing required parameters. Please provide repo and branch');
-      }
+      validateFixPrCommentsInput(repo, branch);
 
       try {
         // Use the service layer to handle the business logic
@@ -167,33 +160,26 @@ const transport = new StdioServerTransport();
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        logger.error(`Error fetching PR comments: ${message}`);
-        throw new McpError(500, `Failed to fetch PR comments: ${message}`);
+        logger.error(`${MESSAGE_DICTIONARY.FAILED_FETCH_PR_COMMENTS} ${message}`);
+        throw new McpError(
+          STATUS_CODES.INTERNAL_SERVER_ERROR,
+          `${MESSAGE_DICTIONARY.FAILED_FETCH_PR_COMMENTS} ${message}`
+        );
       }
-    } 
+    }
     // Check if this is the mark_comments_as_handled tool (with or without prefix)
-    else if (toolName === TOOL_NAMES.MARK_COMMENTS_AS_HANDLED || toolName === PREFIXED_TOOL_NAMES.MARK_COMMENTS_AS_HANDLED) {
+    else if (
+      toolName === TOOL_NAMES.MARK_COMMENTS_AS_HANDLED ||
+      toolName === PREFIXED_TOOL_NAMES.MARK_COMMENTS_AS_HANDLED
+    ) {
       // Extract parameters from the request
       const { repo, fixedComments } = request.params.arguments as {
         repo: string;
         fixedComments: FixedComment[];
       };
 
-      // Validate required parameters
-      if (!repo) {
-        throw new McpError(400, 'Missing required parameter: repo');
-      }
-
-      if (!fixedComments || !Array.isArray(fixedComments) || fixedComments.length === 0) {
-        throw new McpError(400, 'Missing or invalid fixedComments array');
-      }
-
-      // Validate each fixed comment entry
-      for (const comment of fixedComments) {
-        if (typeof comment.fixedCommentId !== 'number') {
-          throw new McpError(400, 'Each fixedComment must have a fixedCommentId (number)');
-        }
-      }
+      // Validate required parameters using the validator service
+      validateMarkCommentsInput(repo, fixedComments);
 
       try {
         // Use the service layer to handle the business logic
@@ -214,17 +200,17 @@ const transport = new StdioServerTransport();
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        logger.error(`Error marking comments as handled: ${message}`);
-        throw new McpError(500, `Failed to mark comments as handled: ${message}`);
+        logger.error(`${MESSAGE_DICTIONARY.FAILED_MARK_COMMENTS} ${message}`);
+        throw new McpError(STATUS_CODES.INTERNAL_SERVER_ERROR, `${MESSAGE_DICTIONARY.FAILED_MARK_COMMENTS} ${message}`);
       }
     } else {
       // If the tool name doesn't match any of our tools
-      throw new McpError(404, 'Tool not found');
+      throw new McpError(STATUS_CODES.NOT_FOUND, MESSAGE_DICTIONARY.TOOL_NOT_FOUND);
     }
   });
 
   // Only log startup message in debug mode
   if (cliOptions.debug) {
-    console.error('GitHub PR Comments MCP Server started and ready for requests');
+    console.error(MESSAGE_DICTIONARY.SERVER_STARTED);
   }
 })();
