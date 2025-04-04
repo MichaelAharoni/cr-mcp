@@ -4,27 +4,6 @@
 export const PORT = 3322;
 
 /**
- * Tool name constants
- */
-export const TOOL_NAMES = {
-  FIX_PR_COMMENTS: 'fix_pr_comments',
-  MARK_COMMENTS_AS_HANDLED: 'mark_comments_as_handled',
-};
-
-/**
- * Tool name prefix used by VS Code MCP
- */
-export const TOOL_NAME_PREFIX = '9f1_';
-
-/**
- * Prefixed tool names (how VS Code will call them)
- */
-export const PREFIXED_TOOL_NAMES = {
-  FIX_PR_COMMENTS: `${TOOL_NAME_PREFIX}${TOOL_NAMES.FIX_PR_COMMENTS}`,
-  MARK_COMMENTS_AS_HANDLED: `${TOOL_NAME_PREFIX}${TOOL_NAMES.MARK_COMMENTS_AS_HANDLED}`,
-};
-
-/**
  * Error and info message dictionary
  */
 export const MESSAGE_DICTIONARY = {

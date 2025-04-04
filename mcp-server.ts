@@ -5,10 +5,16 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema, McpError } from '@modelcontextprotocol/sdk/types.js';
 
 // Import necessary services and utilities
-import { setDebugMode, MESSAGE_DICTIONARY } from './lib/constants/common.constants';
-import { TOOL_NAMES, PREFIXED_TOOL_NAMES, STATUS_CODES } from './lib/constants/server.constants';
-import { setGitHubToken, setGitHubOwner } from './lib/constants/github.constants';
 import { parseCliArguments } from './lib/cli';
+import { setDebugMode, MESSAGE_DICTIONARY } from './lib/constants/common.constants';
+import { STATUS_CODES } from './lib/constants/server.constants';
+import { setGitHubToken, setGitHubOwner } from './lib/constants/github.constants';
+import {
+  FIX_PR_COMMENTS_DICTIONARY,
+  MARK_COMMENTS_DICTIONARY,
+  PREFIXED_TOOL_NAMES,
+  TOOL_NAMES,
+} from './lib/constants/tools.constants';
 
 // Import tools
 import { handleFixPrComments, fixPrCommentsJsonSchema } from './lib/tools/fix-pr-comments.tool';
@@ -16,7 +22,6 @@ import {
   handleMarkCommentsAsHandled,
   markCommentsAsHandledJsonSchema,
 } from './lib/tools/mark-comments-as-handled.tool';
-import { FIX_PR_COMMENTS_DICTIONARY, MARK_COMMENTS_DICTIONARY } from './lib/constants/tools.constants';
 
 // Parse command line arguments
 const cliOptions = parseCliArguments();
