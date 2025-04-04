@@ -1,25 +1,16 @@
-import {
-  PR_COMMENTS_RESPONSE_INSTRUCTIONS,
-  getGitHubOwner
-} from './constants/github.constants';
-import {
-  BranchDetails,
-  GitHubComment,
-  GitHubReview,
-  FixedComment,
-  MarkCommentsResponse,
-} from './types/github.types';
+import { PR_COMMENTS_RESPONSE_INSTRUCTIONS, getGitHubOwner } from './constants/github.constants';
+import { BranchDetails, GitHubComment, GitHubReview, FixedComment, MarkCommentsResponse } from './types/github.types';
 import { logger, MESSAGE_DICTIONARY } from './constants';
 import { simplifyGitHubComments } from './comments.helper';
 import { SimplifiedComment } from './types';
 import { GitHubRepository } from './github.repository';
-import { 
-  cleanRepositoryName, 
-  transformBranchData, 
-  extractFilenames, 
-  formatHandledReply, 
+import {
+  cleanRepositoryName,
+  transformBranchData,
+  extractFilenames,
+  formatHandledReply,
   findPullRequestByBranch,
-  processHandledCommentResults
+  processHandledCommentResults,
 } from './utils';
 import { validatePullRequestExists } from './validator.service';
 

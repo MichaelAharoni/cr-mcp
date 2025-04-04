@@ -40,7 +40,7 @@ export function getGitHubOwner(): string {
   if (!githubOwner) {
     throw new Error('GitHub owner is required. Please provide it using the --gh_owner flag.');
   }
-  
+
   return githubOwner;
 }
 
