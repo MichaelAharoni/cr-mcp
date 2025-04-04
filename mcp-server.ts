@@ -26,6 +26,19 @@ if (!cliOptions.gh_api_key) {
 // Set GitHub API key for use across the application
 setGitHubToken(cliOptions.gh_api_key);
 
+// Define tool names without prefix for better readability
+const TOOL_NAMES = {
+  FIX_PR_COMMENTS: 'fix_pr_comments',
+  MARK_COMMENTS_AS_HANDLED: 'mark_comments_as_handled'
+};
+
+// Define prefixed versions of the tool names (how VS Code will call them)
+const PREFIX = '9f1_';
+const PREFIXED_TOOL_NAMES = {
+  FIX_PR_COMMENTS: `${PREFIX}${TOOL_NAMES.FIX_PR_COMMENTS}`,
+  MARK_COMMENTS_AS_HANDLED: `${PREFIX}${TOOL_NAMES.MARK_COMMENTS_AS_HANDLED}`
+};
+
 // Create the MCP server
 const server = new Server(
   {
@@ -47,12 +60,12 @@ const transport = new StdioServerTransport();
   // Connect to the transport
   await server.connect(transport);
 
-  // Define available tools
+  // Define available tools - we use the display names (without prefix) here
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
       tools: [
         {
-          name: 'fix_pr_comments',
+          name: TOOL_NAMES.FIX_PR_COMMENTS,
           description:
             'Fetching all of the comments from a GitHub pull request, filtering based on status and author and returning them in a simplified format that makes it easier to handle them. you will need to provide ONLY the repo name and branch name.',
           inputSchema: {
@@ -73,7 +86,7 @@ const transport = new StdioServerTransport();
           },
         },
         {
-          name: 'mark_comments_as_handled',
+          name: TOOL_NAMES.MARK_COMMENTS_AS_HANDLED,
           description: 'Mark GitHub PR comments as handled by replying with a resolution summary and adding a reaction',
           inputSchema: {
             type: 'object',
@@ -112,9 +125,12 @@ const transport = new StdioServerTransport();
     };
   });
 
-  // Handle tool calls
+  // Handle tool calls - we need to check for both prefixed and non-prefixed versions
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    if (request.params.name === 'fix_pr_comments') {
+    const toolName = request.params.name;
+    
+    // Check if this is the fix_pr_comments tool (with or without prefix)
+    if (toolName === TOOL_NAMES.FIX_PR_COMMENTS || toolName === PREFIXED_TOOL_NAMES.FIX_PR_COMMENTS) {
       // Extract parameters from the request
       const {
         repo,
@@ -154,7 +170,9 @@ const transport = new StdioServerTransport();
         logger.error(`Error fetching PR comments: ${message}`);
         throw new McpError(500, `Failed to fetch PR comments: ${message}`);
       }
-    } else if (request.params.name === 'mark_comments_as_handled') {
+    } 
+    // Check if this is the mark_comments_as_handled tool (with or without prefix)
+    else if (toolName === TOOL_NAMES.MARK_COMMENTS_AS_HANDLED || toolName === PREFIXED_TOOL_NAMES.MARK_COMMENTS_AS_HANDLED) {
       // Extract parameters from the request
       const { repo, fixedComments } = request.params.arguments as {
         repo: string;
