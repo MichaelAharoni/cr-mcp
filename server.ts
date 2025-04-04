@@ -89,9 +89,9 @@ app.post('/mark-comments-handled', async (req: Request, res: Response): Promise<
 
     // Validate each fixed comment entry
     for (const comment of fixedComments) {
-      if (typeof comment.fixedCommentId !== 'number' || !comment.fixSummary) {
+      if (typeof comment.fixedCommentId !== 'number') {
         res.status(400).json({
-          error: 'Each fixedComment must have a fixedCommentId (number) and fixSummary (string)',
+          error: 'Each fixedComment must have a fixedCommentId (number)',
         });
 
         return;

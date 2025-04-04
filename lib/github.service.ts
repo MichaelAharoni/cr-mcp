@@ -43,7 +43,7 @@ export function getFullRepoName(owner: string, repo: string): string {
  * Format a reply for a handled comment
  */
 export function formatHandledReply(fixSummary: string): string {
-  return `Done - ${fixSummary}`;
+  return `Done - ${fixSummary} (By AI)`;
 }
 
 /**
@@ -193,8 +193,10 @@ export async function markCommentsAsHandled({
         }
 
         // Step 3: Reply to the comment with pull number
-        const replyBody = formatHandledReply(fixSummary);
-        await GitHubRepository.replyToComment(owner, repo, pullNumber, fixedCommentId, replyBody);
+        if (fixSummary?.length) {
+          const replyBody = formatHandledReply(fixSummary);
+          await GitHubRepository.replyToComment(owner, repo, pullNumber, fixedCommentId, replyBody);
+        }
 
         // Step 4: Add a reaction to the comment
         await GitHubRepository.addReactionToComment(owner, repo, fixedCommentId, reaction);

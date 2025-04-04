@@ -85,7 +85,7 @@ export interface FixedComment {
    * A concise summary (3-15 words) describing how the comment was addressed
    * This will be added to the PR comment with "Done - " prefix
    */
-  fixSummary: string;
+  fixSummary?: string;
 
   /**
    * The reaction to add to the comment (optional)
