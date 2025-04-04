@@ -9,8 +9,8 @@ import { logger, setDebugMode } from './lib/constants';
 import { getPullRequestComments, handleFixedComments } from './lib/github.service';
 import { parseCliArguments } from './lib/cli';
 import { FixedComment } from './lib/types/github.types';
-import { validateFixPrCommentsInput, validateMarkCommentsInput } from './lib/validator.service';
-import { cleanRepositoryName } from './lib/utils';
+import { validateFixPrCommentsInput, validateMarkCommentsInput } from './lib/helpers/validator.helper';
+import { cleanRepositoryName } from './lib/helpers/utils.helper';
 
 // Express application instance (declared at module level for export)
 const app = initializeServer();

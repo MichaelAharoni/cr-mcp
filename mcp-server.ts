@@ -11,7 +11,7 @@ import { setGitHubToken, setGitHubOwner } from './lib/constants/github.constants
 import { getPullRequestComments, handleFixedComments } from './lib/github.service';
 import { parseCliArguments } from './lib/cli';
 import { FixedComment } from './lib/types/github.types';
-import { validateFixPrCommentsInput, validateMarkCommentsInput } from './lib/validator.service';
+import { validateFixPrCommentsInput, validateMarkCommentsInput } from './lib/helpers/validator.helper';
 
 // Parse command line arguments
 const cliOptions = parseCliArguments();

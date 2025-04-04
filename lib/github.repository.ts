@@ -1,5 +1,5 @@
 import { GitHubComment, GitHubPullRequest, GitHubReview } from './types/github.types';
-import { githubApiRequest, extractPullNumberFromComment } from './utils';
+import { githubApiRequest, extractPullNumberFromComment } from './helpers/utils.helper';
 
 /**
  * Repository API endpoints

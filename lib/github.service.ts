@@ -1,7 +1,7 @@
 import { PR_COMMENTS_RESPONSE_INSTRUCTIONS, getGitHubOwner } from './constants/github.constants';
 import { BranchDetails, GitHubComment, GitHubReview, FixedComment, MarkCommentsResponse } from './types/github.types';
 import { logger, MESSAGE_DICTIONARY } from './constants';
-import { simplifyGitHubComments } from './comments.helper';
+import { simplifyGitHubComments } from './helpers/comments.helper';
 import { SimplifiedComment } from './types';
 import { GitHubRepository } from './github.repository';
 import {
@@ -10,8 +10,8 @@ import {
   formatHandledReply,
   findPullRequestByBranch,
   processHandledCommentResults,
-} from './utils';
-import { validatePullRequestExists } from './validator.service';
+} from './helpers/utils.helper';
+import { validatePullRequestExists } from './helpers/validator.helper';
 
 /**
  * Determine which comments are resolved or outdated

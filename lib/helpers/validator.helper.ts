@@ -1,7 +1,7 @@
-import { MESSAGE_DICTIONARY } from './constants';
-import { FixedComment, GitHubPullRequest } from './types/github.types';
+import { MESSAGE_DICTIONARY } from '../constants';
+import { FixedComment, GitHubPullRequest } from '../types/github.types';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
-import { STATUS_CODES } from './constants/server.constants';
+import { STATUS_CODES } from '../constants/server.constants';
 
 /**
  * Validator service for validating API inputs and request parameters

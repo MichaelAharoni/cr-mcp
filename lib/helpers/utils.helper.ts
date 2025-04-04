@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { GITHUB_API_URL, getGitHubHeaders, PR_REPLIES_RESPONSE_INSTRUCTIONS } from './constants/github.constants';
-import { logger } from './constants';
-import { GitHubComment, GitHubPullRequest, BranchDetails, MarkCommentsResponse } from './types/github.types';
+import { GITHUB_API_URL, getGitHubHeaders, PR_REPLIES_RESPONSE_INSTRUCTIONS } from '../constants/github.constants';
+import { logger } from '../constants';
+import { GitHubComment, GitHubPullRequest, BranchDetails, MarkCommentsResponse } from '../types/github.types';
 
 /**
  * GitHub API error messages

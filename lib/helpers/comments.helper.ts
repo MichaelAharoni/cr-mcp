@@ -1,6 +1,6 @@
-import { GitHubComment } from './types/github.types';
-import { SimplifiedComment } from './types/comment.types';
-import { logger } from './constants';
+import { GitHubComment } from '../types/github.types';
+import { SimplifiedComment } from '../types/comment.types';
+import { logger } from '../constants';
 
 /**
  * Groups comments by their endLine to determine which ones to keep
