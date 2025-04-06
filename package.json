@@ -1,23 +1,39 @@
 {
   "name": "cr-mcp",
   "version": "1.0.0",
-  "main": "server.ts",
+  "description": "Code Review Model Context Protocol (CR-MCP) server for managing GitHub pull request comments",
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
   "type": "commonjs",
   "bin": {
     "cr-mcp": "./dist/mcp-server.js"
   },
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "rm -rf dist && tsc",
     "test": "jest",
     "start": "nodemon",
     "prepare": "npm run build",
-    "postinstall": "chmod +x ./dist/mcp-server.js"
+    "postinstall": "chmod +x ./dist/mcp-server.js",
+    "prepublishOnly": "npm run lint && npm run build"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "code-review",
+    "github",
+    "pull-request",
+    "comments",
+    "mcp",
+    "model-context-protocol"
+  ],
+  "author": "Michael Aharoni",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michael-aharoni/cr-mcp"
+  },
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.8.0",
     "@types/yargs": "^17.0.33",

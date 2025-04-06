@@ -3,6 +3,39 @@
 ## Description
 Code Review Model Context Protocol (CR-MCP) server for managing GitHub pull request comments.
 
+This tool helps streamline the PR review workflow by:
+- Fetching all comments from the PR attached to your current branch
+- Automatically fixing issues raised in those comments
+- Requesting additional context when needed from you for issues that require cross-file changes
+- Filtering out resolved comments and comments where you (as the PR author) have already replied
+- Ignoring non-action-required comments (like positive reactions)
+- Offering to mark comments as handled by adding a summary of the implementation solution and a rocket emoji
+- Suggesting a commit message and offering to push your changes at the end of the process
+
+### VS Code MCP Configuration
+
+You can add this server to your VS Code MCP configuration by adding the following to your `.vscode/mcp.json` file:
+
+```json
+{
+    "servers": {
+        "github-pr-comments": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "cr-mcp",
+                "--gh_api_key=<YOUR_GITHUB_API_KEY>",
+                "--gh_owner=<OWNER_NAME-(Organization or a username)>",
+                "--stderr",
+                "--debug"
+            ]
+        }
+    }
+}
+```
+
+Replace `<YOUR_GITHUB_API_KEY>` with your actual GitHub API key and `<OWNER_NAME-(Organization or a username)>` with your GitHub organization or username.
+
 ## Installation
 
 ```bash
@@ -94,31 +127,31 @@ After installing the package globally or via npx:
 npx cr-mcp --gh_api_key=your_github_api_key_here --gh_owner=your_github_owner_here
 ```
 
-### VS Code MCP Configuration
-
-You can add this server to your VS Code MCP configuration by adding the following to your `.vscode/mcp.json` file:
-
-```json
-{
-    "servers": {
-        "github-pr-comments": {
-            "type": "stdio",
-            "command": "npx",
-            "args": [
-                "cr-mcp",
-                "--gh_api_key=<YOUR_GITHUB_API_KEY>",
-                "--gh_owner=<OWNER_NAME-(Organization or a username)>",
-                "--stderr",
-                "--debug"
-            ]
-        }
-    }
-}
-```
-
-Replace `<YOUR_GITHUB_API_KEY>` with your actual GitHub API key and `<OWNER_NAME-(Organization or a username)>` with your GitHub organization or username.
-
 ## API Endpoints
 
 - `POST /fix-pr-comments` - Gets code review comments for a pull request in order the fix them by the agent
 - `GET /health` - Health check endpoint
+
+## Disclaimer
+
+### No Warranty
+
+THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+### Use at Your Own Risk
+
+The cr-mcp tool interacts with GitHub repositories and can potentially modify your code. While we've designed it to be helpful and safe, you should:
+
+- Always review changes before committing them to your repository
+- Keep backups of your important code
+- Test the tool in a non-production environment before using it on critical projects
+
+### Third-Party Services
+
+This tool interacts with GitHub's API and other third-party services. Your use of such services is subject to their respective terms of service and privacy policies. We are not responsible for any actions taken by these third-party services.
+
+### Security Considerations
+
+- Never share your GitHub API keys or tokens
+- Be careful when using this tool on repositories containing sensitive information
+- Consider the security implications of allowing automated changes to your codebase
