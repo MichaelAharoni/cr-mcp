@@ -1,6 +1,6 @@
 {
   "name": "cr-mcp",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Code Review Model Context Protocol (CR-MCP) server for managing GitHub pull request comments",
   "main": "dist/server.js",
   "types": "dist/server.d.ts",
@@ -31,7 +31,7 @@
   "author": "Michael Aharoni",
   "repository": {
     "type": "git",
-    "url": "https://github.com/michael-aharoni/cr-mcp"
+    "url": "https://github.com/MichaelAharoni/cr-mcp"
   },
   "license": "ISC",
   "dependencies": {

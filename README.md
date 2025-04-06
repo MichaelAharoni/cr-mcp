@@ -24,7 +24,7 @@ You can add this server to your VS Code MCP configuration by adding the followin
             "command": "npx",
             "args": [
                 "cr-mcp",
-                "--gh_api_key=<YOUR_GITHUB_API_KEY>",
+                "--gh_api_key=<YOUR_GITHUB_API_KEY>", // to get one -> https://github.com/settings/tokens/new
                 "--gh_owner=<OWNER_NAME-(Organization or a username)>",
                 "--stderr",
                 "--debug"
@@ -56,6 +56,9 @@ npm start --gh_api_key=your_github_api_key_here --gh_owner=your_github_owner_her
 #### GitHub API Key
 
 You must provide your GitHub API key as a command line argument when starting the server:
+
+> You can generate a GitHub API key by visiting: [https://github.com/settings/tokens/new](https://github.com/settings/tokens/new)  
+> Make sure to select the necessary permissions for repository access.
 
 ```bash
 node dist/server.js --gh_api_key=your_github_api_key_here
