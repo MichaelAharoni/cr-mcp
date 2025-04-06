@@ -6,7 +6,7 @@ import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { STATUS_CODES } from '../constants/server.constants';
 import { handleFixedComments } from '../github.service';
 import { validateMarkCommentsInput } from '../helpers/validator.helper';
-import { MARK_COMMENTS_DICTIONARY } from '../constants/tools.constants';
+import { MARK_COMMENTS_DICTIONARY, TOOL_NAMES } from '../constants/tools.constants';
 
 // Zod schema for mark-comments-as-handled tool input validation
 export const markCommentsAsHandledSchema = z.object({
@@ -23,9 +23,10 @@ export const markCommentsAsHandledSchema = z.object({
     .describe(MARK_COMMENTS_DICTIONARY.FIXED_COMMENTS_DESCRIPTION),
 });
 
-// Convert Zod schema to JSON schema for MCP
+// Convert Zod schema to JSON schema
 export const markCommentsAsHandledJsonSchema = zodToJsonSchema(markCommentsAsHandledSchema, {
   $refStrategy: 'none',
+  target: 'jsonSchema7',
 });
 
 // Type derived from Zod schema
@@ -68,3 +69,9 @@ export async function handleMarkCommentsAsHandled(params: unknown): Promise<{
     throw new McpError(STATUS_CODES.INTERNAL_SERVER_ERROR, `${MESSAGE_DICTIONARY.FAILED_MARK_COMMENTS} ${message}`);
   }
 }
+
+export const MARK_COMMENTS_AS_HANDLED_TOOL = {
+  name: TOOL_NAMES.MARK_COMMENTS_AS_HANDLED,
+  description: MARK_COMMENTS_DICTIONARY.DESCRIPTION,
+  inputSchema: markCommentsAsHandledJsonSchema,
+};

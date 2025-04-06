@@ -6,7 +6,7 @@ import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { STATUS_CODES } from '../constants/server.constants';
 import { getPullRequestComments } from '../github.service';
 import { validateFixPrCommentsInput } from '../helpers/validator.helper';
-import { FIX_PR_COMMENTS_DICTIONARY } from '../constants/tools.constants';
+import { FIX_PR_COMMENTS_DICTIONARY, TOOL_NAMES } from '../constants/tools.constants';
 
 // Zod schema for fix-pr-comments tool input validation
 export const fixPrCommentsSchema = z.object({
@@ -15,9 +15,10 @@ export const fixPrCommentsSchema = z.object({
   prAuthor: z.string().optional().describe(FIX_PR_COMMENTS_DICTIONARY.PR_AUTHOR_DESCRIPTION),
 });
 
-// Convert Zod schema to JSON schema for MCP
+// Convert Zod schema to JSON schema
 export const fixPrCommentsJsonSchema = zodToJsonSchema(fixPrCommentsSchema, {
   $refStrategy: 'none',
+  target: 'jsonSchema7',
 });
 
 // Type derived from Zod schema
@@ -60,3 +61,9 @@ export async function handleFixPrComments(params: unknown): Promise<{
     throw new McpError(STATUS_CODES.INTERNAL_SERVER_ERROR, `${MESSAGE_DICTIONARY.FAILED_FETCH_PR_COMMENTS} ${message}`);
   }
 }
+
+export const FIX_PR_COMMENTS_TOOL = {
+  name: TOOL_NAMES.FIX_PR_COMMENTS,
+  description: FIX_PR_COMMENTS_DICTIONARY.DESCRIPTION,
+  inputSchema: fixPrCommentsJsonSchema,
+};
