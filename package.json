@@ -1,6 +1,6 @@
 {
   "name": "cr-mcp",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Code Review Model Context Protocol (CR-MCP) server for managing GitHub pull request comments",
   "main": "dist/server.js",
   "types": "dist/server.d.ts",
