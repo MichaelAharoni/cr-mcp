@@ -14,7 +14,7 @@ export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
   `9. If the user wants to commit and push the changes, Suggest him a suitable commit message.`,
   `10. If the user doesn't want your suggestion, ask him to provide a commit message.`,
   `11. Use the user's GIT CLI to execute from the user commandline the add, commit and push changes as followed: A. ""git add ."" B. ""git commit -m "<commit message>"" C. ""git push""`,
-  `12. When you finish handling the PR, ask the user if they want to mark all comments as handled.`,
+  `12. When you finish handling the PR, only after you asked the user to commit and push his changes, ask the user if they want to mark all comments as handled.`,
 ];
 
 export const PR_REPLIES_RESPONSE_INSTRUCTIONS = [
