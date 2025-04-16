@@ -1,4 +1,5 @@
-import { PR_COMMENTS_RESPONSE_INSTRUCTIONS, getGitHubOwner } from './constants/github.constants';
+import { getGitHubOwner } from './constants/github.constants';
+import { PR_COMMENTS_RESPONSE_INSTRUCTIONS } from './constants/pr-response-instructions.constants';
 import { BranchDetails, GitHubComment, GitHubReview, FixedComment, MarkCommentsResponse } from './types/github.types';
 import { logger, MESSAGE_DICTIONARY } from './constants/common.constants';
 import { simplifyGitHubComments } from './helpers/comments.helper';
@@ -12,6 +13,8 @@ import {
   findPullRequestByBranch,
   processHandledCommentResults,
 } from './helpers/utils.helper';
+import { McpError } from '@modelcontextprotocol/sdk/types.js';
+import { STATUS_CODES } from './constants/server.constants';
 
 /**
  * Determine which comments are resolved or outdated
@@ -53,37 +56,48 @@ export async function fetchPullRequestComments({
   repo: string;
   branch: string;
 }): Promise<{ comments: GitHubComment[]; handledStatus: Map<number, boolean>; prAuthor: string }> {
-  logger.info(`Fetching pull request comments for ${owner}/${repo}, branch: ${branch}`);
+  try {
+    logger.info(`Fetching pull request comments for ${owner}/${repo}, branch: ${branch}`);
 
-  // Step 1: Get all pull requests for the repository
-  const pullRequests = await GitHubRepository.fetchPullRequests(owner, repo);
+    // Step 1: Get all pull requests for the repository
+    const pullRequests = await GitHubRepository.fetchPullRequests(owner, repo);
 
-  // Step 2: Find the matching pull request for the branch
-  const pullRequest = findPullRequestByBranch(pullRequests, branch);
+    // Step 2: Find the matching pull request for the branch
+    const pullRequest = findPullRequestByBranch(pullRequests, branch);
 
-  // Validate that a pull request was found
-  validatePullRequestExists(pullRequest, branch);
+    // Validate that a pull request was found
+    validatePullRequestExists(pullRequest, branch);
 
-  // At this point, pullRequest is guaranteed not to be null because validatePullRequestExists would throw an error
-  const pullNumber = pullRequest!.number;
-  const prAuthor = pullRequest!.user.login;
+    // At this point, pullRequest is guaranteed not to be null because validatePullRequestExists would throw an error
+    const pullNumber = pullRequest!.number;
+    const prAuthor = pullRequest!.user.login;
 
-  logger.info(MESSAGE_DICTIONARY.FOUND_PR_FOR_BRANCH.replace('%s', String(pullNumber)).replace('%s', branch));
+    logger.info(MESSAGE_DICTIONARY.FOUND_PR_FOR_BRANCH.replace('%s', String(pullNumber)).replace('%s', branch));
 
-  // Step 3: Fetch all comments from the pull request (both review comments and issue comments)
-  const [reviewComments, issueComments, reviews] = await Promise.all([
-    GitHubRepository.fetchPrReviewComments(owner, repo, pullNumber),
-    GitHubRepository.fetchPrIssueComments(owner, repo, pullNumber),
-    GitHubRepository.fetchPullRequestReviews(owner, repo, pullNumber),
-  ]);
+    // Step 3: Fetch all comments from the pull request (both review comments and issue comments)
+    const [reviewComments, issueComments, reviews] = await Promise.all([
+      GitHubRepository.fetchPrReviewComments(owner, repo, pullNumber),
+      GitHubRepository.fetchPrIssueComments(owner, repo, pullNumber),
+      GitHubRepository.fetchPullRequestReviews(owner, repo, pullNumber),
+    ]);
 
-  // Step 4: Combine comments
-  const allComments = [...reviewComments, ...issueComments];
+    // Step 4: Combine comments
+    const allComments = [...reviewComments, ...issueComments];
 
-  // Step 5: Determine which comments are resolved or outdated
-  const handledStatus = determineHandledComments(allComments, reviews);
+    // Step 5: Determine which comments are resolved or outdated
+    const handledStatus = determineHandledComments(allComments, reviews);
 
-  return { comments: allComments, handledStatus, prAuthor };
+    return { comments: allComments, handledStatus, prAuthor };
+  } catch (error) {
+    if (error instanceof McpError) {
+      throw error;
+    }
+
+    throw new McpError(
+      STATUS_CODES.INTERNAL_SERVER_ERROR,
+      `Failed to fetch pull request comments: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
 }
 
 /**
@@ -97,63 +111,76 @@ export async function markCommentsAsHandled({
   owner: string;
   repo: string;
   fixedComments: FixedComment[];
-}): Promise<Array<{ commentId: number; success: boolean; message: string }>> {
-  logger.info(
-    MESSAGE_DICTIONARY.MARKING_COMMENTS_HANDLED.replace('%s', String(fixedComments.length))
-      .replace('%s', owner)
-      .replace('%s', repo)
-  );
+}): Promise<Array<{ commentId: number; success: boolean; message: string; error?: string }>> {
+  try {
+    logger.info(
+      MESSAGE_DICTIONARY.MARKING_COMMENTS_HANDLED.replace('%s', String(fixedComments.length))
+        .replace('%s', owner)
+        .replace('%s', repo)
+    );
 
-  // Process each fixed comment
-  const results = await Promise.all(
-    fixedComments.map(async (comment) => {
-      const { fixedCommentId, fixSummary, reaction = 'rocket' } = comment;
+    // Process each fixed comment
+    const results = await Promise.all(
+      fixedComments.map(async (comment) => {
+        const { fixedCommentId, fixSummary, reaction = 'rocket' } = comment;
 
-      try {
-        // Step 1: Get the comment details to extract the pull request number
-        const commentDetails = await GitHubRepository.fetchCommentDetails(owner, repo, fixedCommentId);
+        try {
+          // Step 1: Get the comment details to extract the pull request number
+          const commentDetails = await GitHubRepository.fetchCommentDetails(owner, repo, fixedCommentId);
 
-        // Step 2: Extract the pull request number from the comment details
-        const pullNumber = GitHubRepository.extractPullNumberFromComment(commentDetails);
+          // Step 2: Extract the pull request number from the comment details
+          const pullNumber = GitHubRepository.extractPullNumberFromComment(commentDetails);
 
-        if (!pullNumber) {
+          if (!pullNumber) {
+            return {
+              commentId: fixedCommentId,
+              success: false,
+              message: MESSAGE_DICTIONARY.FAILED_EXTRACT_PR.replace('%s', String(fixedCommentId)),
+              error: 'Could not extract pull request number from comment',
+            };
+          }
+
+          // Step 3: Reply to the comment with pull number
+          if (fixSummary?.length) {
+            const replyBody = formatHandledReply(fixSummary);
+            await GitHubRepository.replyToComment(owner, repo, pullNumber, fixedCommentId, replyBody);
+          }
+
+          // Step 4: Add a reaction to the comment
+          await GitHubRepository.addReactionToComment(owner, repo, fixedCommentId, reaction);
+
+          return {
+            commentId: fixedCommentId,
+            success: true,
+            message: MESSAGE_DICTIONARY.MARK_COMMENT_SUCCESS.replace('%s', String(fixedCommentId)),
+          };
+        } catch (error) {
+          logger.error(MESSAGE_DICTIONARY.MARK_COMMENT_ERROR.replace('%s', String(fixedCommentId)), error);
+
           return {
             commentId: fixedCommentId,
             success: false,
-            message: MESSAGE_DICTIONARY.FAILED_EXTRACT_PR.replace('%s', String(fixedCommentId)),
+            message: MESSAGE_DICTIONARY.FAILED_MARK_COMMENT.replace('%s', String(fixedCommentId)).replace(
+              '%s',
+              error instanceof Error ? error.message : String(error)
+            ),
+            error: error instanceof Error ? error.message : String(error),
           };
         }
+      })
+    );
 
-        // Step 3: Reply to the comment with pull number
-        if (fixSummary?.length) {
-          const replyBody = formatHandledReply(fixSummary);
-          await GitHubRepository.replyToComment(owner, repo, pullNumber, fixedCommentId, replyBody);
-        }
+    return results;
+  } catch (error) {
+    if (error instanceof McpError) {
+      throw error;
+    }
 
-        // Step 4: Add a reaction to the comment
-        await GitHubRepository.addReactionToComment(owner, repo, fixedCommentId, reaction);
-
-        return {
-          commentId: fixedCommentId,
-          success: true,
-          message: MESSAGE_DICTIONARY.MARK_COMMENT_SUCCESS.replace('%s', String(fixedCommentId)),
-        };
-      } catch (error) {
-        logger.error(MESSAGE_DICTIONARY.MARK_COMMENT_ERROR.replace('%s', String(fixedCommentId)), error);
-
-        return {
-          commentId: fixedCommentId,
-          success: false,
-          message: MESSAGE_DICTIONARY.FAILED_MARK_COMMENT.replace('%s', String(fixedCommentId)).replace(
-            '%s',
-            error instanceof Error ? error.message : String(error)
-          ),
-        };
-      }
-    })
-  );
-
-  return results;
+    throw new McpError(
+      STATUS_CODES.INTERNAL_SERVER_ERROR,
+      `Failed to mark comments as handled: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
 }
 
 /**
