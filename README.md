@@ -36,6 +36,32 @@ You can add this server to your VS Code MCP configuration by adding the followin
 
 Replace `<YOUR_GITHUB_API_KEY>` with your actual GitHub API key and `<OWNER_NAME-(Organization or a username)>` with your GitHub organization or username.
 
+## Examples
+
+### Fixing PR Comments Automatically
+
+You just need to ask the agent "fix my pr comments", and here are the results:
+
+![PR Comments Analysis](./assets/images/example01.png)
+The agent analyzes the PR comments and identifies actionable items:
+- Filters out positive feedback emoji comments
+- Identifies development-only code that should be removed
+- Spots code structure improvements like unnecessary `else` statements
+
+![PR Comments Fixes](./assets/images/example02.png)
+The agent automatically implements the necessary fixes:
+- Removes debug code showing domain URL from the product list page
+- Improves code structure by removing unnecessary `else` statement in the navigation helper
+
+![PR Comments Handled](./assets/images/example03.png)
+After making the changes, the agent:
+- Marks comments as handled with descriptive summaries
+- Adds rocket emoji reactions to show completion
+- Stages the changes and suggests an appropriate commit message
+- Offers to push the changes to your branch
+
+This automated workflow helps streamline the PR review process by handling common code review feedback without manual intervention.
+
 ## Installation
 
 ```bash
