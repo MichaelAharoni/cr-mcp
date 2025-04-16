@@ -5,7 +5,8 @@ export const MARK_COMMENTS_DICTIONARY = {
   FIXED_COMMENTS_DESCRIPTION: 'List of comments to mark as fixed',
   COMMENT_ID_DESCRIPTION: 'The ID of the GitHub comment that has been fixed',
   SUMMARY_DESCRIPTION: 'Optional: A concise summary (3-15 words) of how the comment was addressed',
-  REACTION_DESCRIPTION: 'Optional: The reaction to add (e.g., rocket, heart, hooray). Default: rocket',
+  REACTION_DESCRIPTION:
+    'Optional: The reaction to add (e.g., "+1","-1","laugh","confused","heart","hooray","rocket","eyes"). Default: rocket',
 };
 
 // String constants for the fix-pr-comments tool

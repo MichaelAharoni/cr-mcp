@@ -3,22 +3,32 @@ import { logger, MESSAGE_DICTIONARY } from './common.constants';
 export const GITHUB_API_URL = 'https://api.github.com';
 
 export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
-  `1. Show the user the PR comments that haven't been handled yet as a nice list before you start handling them.`,
-  `2. Ask the user if he want's to handle all comments or just some of them.`,
-  `2. Don't explain the user for each comment if it hasn't been handled or unhandled yet, unless the user explicitly asks for it.`,
-  `3. If in order to handle a comment, you need to ask the user for more information or context, do so. (And either if the context seems to be missing or the comment is not clear or too complex, ask the user for more information before proceeding)`,
-  `4. Where you can, provide the user with a list of possible actions they can take and wait for the user to choose one of them to handle the comment fixing (if its a difficult one).`,
-  `5. If you are not sure if a comment is handled or not, ask the user for clarification.`,
-  `6. Understand if the comment is a positive feedback, or a question back (like a question back to the user) in this case you will need to ask the user for more information before proceeding (maybe you will have to reply back based on the user response).`,
-  `7. Understand the context of the comment and provide a response that is relevant to the comment.`,
-  '8. In some cases, there is few comments for the same line, combine them and understand be the chaining if the comment needs to be handled or not.',
-  `9. If the comment doen't require any action, you can ignore it. (like a positive feedback comment, some question that doesn't require any code changes, etc... (If questions does exists, make sure to tell the user that someone has asked a question back to them that not require any code changes and tell him to answer the question))`,
-  `10. For comments that you can fix, fix them without asking the user for confirmation each one of them separately.`,
-  `10. If havn't asked the user to commit prevusly, Ask the user if he want's to commit and push the changes.`,
-  `11. If the user wants to commit and push the changes, Suggest him a suitable commit message.`,
-  `12. Use the user's GIT CLI to execute from the user commandline the add, commit and push changes as followed: A. ""git add ."" B. ""git commit -m "<commit message>"" C. ""git push""`,
-  `13. When you finish handling the PR, only after you asked the user to commit and push his changes`,
-  `14. Afte all of that, wether the user want's to commit and push his changes or not, ask the user if they want to mark all comments as handled.`,
+  // Initial Setup and Display
+  `1. Display all unhandled PR comments in a clear, organized list`,
+  `2. Ask user if they want to handle all comments or specific ones`,
+
+  // Comment Analysis and Context
+  `3. For each comment, analyze its type and context before proceeding`,
+  `4. Identify if comment is: a). Actionable fix b). Question c). Feedback d). Multiple related comments`,
+  `5. For unclear or complex comments, request additional context from user`,
+  `6. For multiple comments on same line, analyze them together for combined context`,
+
+  // Comment Handling
+  `7. For actionable fixes: implement changes without separate confirmations`,
+  `8. For questions: request user input before proceeding`,
+  `9. For feedback: acknowledge and determine if action needed`,
+  `10. For unclear comments: request clarification before proceeding`,
+
+  // Git Operations
+  `11. After handling comments, ask user if they want to commit changes`,
+  `12. If committing: suggest commit message and execute git commands`,
+  `13. Git commands sequence: "git add ." -> "git commit -m <message>" -> "git push"`,
+  `14. Handle any git push errors by analyzing and reporting to user`,
+
+  // Final Steps
+  `15. After git operations, ask user if they want to mark comments as handled`,
+  `16. For marking comments: request confirmation and reaction emoji preference`,
+  `17. Never execute git operations or mark comments without explicit user confirmation`,
 ];
 
 export const PR_REPLIES_RESPONSE_INSTRUCTIONS = [
