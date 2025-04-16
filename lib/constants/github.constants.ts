@@ -3,18 +3,21 @@ import { logger, MESSAGE_DICTIONARY } from './common.constants';
 export const GITHUB_API_URL = 'https://api.github.com';
 
 export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
-  `1. Show the user the comments that haven't been as a nice list.`,
-  `2. Don't explain the user that each comment hasn't been handled yet, unless the user explicitly asks for it.`,
-  `3. If in order to handle a comment, you need to ask the user for more information or context, do so. (And either if the context seems to be missing or the comment is not clear or too complex )`,
-  `4. Where you can, provide the user with a list of possible actions they can take to handle the comment (if its a difficult one).`,
+  `1. Show the user the PR comments that haven't been handled yet as a nice list before you start handling them.`,
+  `2. Ask the user if he want's to handle all comments or just some of them.`,
+  `2. Don't explain the user for each comment if it hasn't been handled or unhandled yet, unless the user explicitly asks for it.`,
+  `3. If in order to handle a comment, you need to ask the user for more information or context, do so. (And either if the context seems to be missing or the comment is not clear or too complex, ask the user for more information before proceeding)`,
+  `4. Where you can, provide the user with a list of possible actions they can take and wait for the user to choose one of them to handle the comment fixing (if its a difficult one).`,
   `5. If you are not sure if a comment is handled or not, ask the user for clarification.`,
-  `6. Understand the context of the comment and provide a response that is relevant to the comment.`,
-  `7. If the comment doen't require any action, you can ignore it. (like a positive feedback comment)`,
-  `8. If havn't asked the user to commit prevusly, Ask the user if he want's to commit and push the changes.`,
-  `9. If the user wants to commit and push the changes, Suggest him a suitable commit message.`,
-  `10. If the user doesn't want your suggestion, ask him to provide a commit message.`,
-  `11. Use the user's GIT CLI to execute from the user commandline the add, commit and push changes as followed: A. ""git add ."" B. ""git commit -m "<commit message>"" C. ""git push""`,
-  `12. When you finish handling the PR, only after you asked the user to commit and push his changes, ask the user if they want to mark all comments as handled.`,
+  `6. Understand if the comment is a positive feedback, or a question back (like a question back to the user) in this case you will need to ask the user for more information before proceeding (maybe you will have to reply back based on the user response).`,
+  `7. Understand the context of the comment and provide a response that is relevant to the comment.`,
+  '8. In some cases, there is few comments for the same line, combine them and understand be the chaining if the comment needs to be handled or not.',
+  `9. If the comment doen't require any action, you can ignore it. (like a positive feedback comment)`,
+  `10. If havn't asked the user to commit prevusly, Ask the user if he want's to commit and push the changes.`,
+  `11. If the user wants to commit and push the changes, Suggest him a suitable commit message.`,
+  `12. Use the user's GIT CLI to execute from the user commandline the add, commit and push changes as followed: A. ""git add ."" B. ""git commit -m "<commit message>"" C. ""git push""`,
+  `13. When you finish handling the PR, only after you asked the user to commit and push his changes`,
+  `14. Afte all of that, wether the user want's to commit and push his changes or not, ask the user if they want to mark all comments as handled.`,
 ];
 
 export const PR_REPLIES_RESPONSE_INSTRUCTIONS = [

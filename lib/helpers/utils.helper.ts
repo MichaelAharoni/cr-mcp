@@ -2,6 +2,30 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { GITHUB_API_URL, getGitHubHeaders, PR_REPLIES_RESPONSE_INSTRUCTIONS } from '../constants/github.constants';
 import { logger, MESSAGE_DICTIONARY } from '../constants/common.constants';
 import { GitHubComment, GitHubPullRequest, BranchDetails, MarkCommentsResponse } from '../types/github.types';
+import { McpError } from '@modelcontextprotocol/sdk/types.js';
+import { STATUS_CODES } from '../constants/server.constants';
+
+/**
+ * Get appropriate error message based on HTTP status code
+ */
+function getGitHubErrorMessage(status: number, message: string): string {
+  switch (status) {
+    case STATUS_CODES.NOT_FOUND:
+      return MESSAGE_DICTIONARY.GITHUB_NOT_FOUND;
+    case STATUS_CODES.UNAUTHORIZED:
+      return MESSAGE_DICTIONARY.GITHUB_UNAUTHORIZED;
+    case STATUS_CODES.FORBIDDEN:
+      return MESSAGE_DICTIONARY.GITHUB_FORBIDDEN;
+    case STATUS_CODES.RATE_LIMIT:
+      return MESSAGE_DICTIONARY.GITHUB_RATE_LIMIT;
+    case STATUS_CODES.VALIDATION_FAILED:
+      return MESSAGE_DICTIONARY.GITHUB_VALIDATION_FAILED.replace('%s', message);
+    case STATUS_CODES.INTERNAL_SERVER_ERROR:
+      return MESSAGE_DICTIONARY.GITHUB_SERVER_ERROR;
+    default:
+      return MESSAGE_DICTIONARY.API_ERROR.replace('%s', String(status)).replace('%s', message);
+  }
+}
 
 /**
  * Makes a GitHub API request using axios
@@ -36,13 +60,28 @@ export async function githubApiRequest<T>(
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      logger.error(`${MESSAGE_DICTIONARY.API_ERROR} ${error.response?.status} ${error.response?.statusText}`);
-      logger.error(`${MESSAGE_DICTIONARY.ERROR_DETAILS} ${JSON.stringify(error.response?.data || {})}`);
-      throw new Error(`${MESSAGE_DICTIONARY.API_ERROR} ${error.response?.status} ${error.response?.statusText}`);
+      const status = error.response?.status || STATUS_CODES.INTERNAL_SERVER_ERROR;
+      const statusText = error.response?.statusText || 'Unknown error';
+      const errorData = error.response?.data || {};
+      const errorMessage = errorData.message || statusText;
+
+      logger.error(MESSAGE_DICTIONARY.API_ERROR.replace('%s', String(status)).replace('%s', statusText));
+      logger.error(MESSAGE_DICTIONARY.ERROR_DETAILS.replace('%s', JSON.stringify(errorData)));
+
+      const detailedMessage = getGitHubErrorMessage(status, errorMessage);
+      throw new McpError(status, detailedMessage);
     }
 
-    logger.error(`${MESSAGE_DICTIONARY.REQUEST_ERROR} ${path}:`, error);
-    throw new Error(`${MESSAGE_DICTIONARY.REQUEST_FAILED} ${error instanceof Error ? error.message : String(error)}`);
+    logger.error(
+      MESSAGE_DICTIONARY.REQUEST_ERROR.replace('%s', path).replace(
+        '%s',
+        error instanceof Error ? error.message : String(error)
+      )
+    );
+    throw new McpError(
+      STATUS_CODES.INTERNAL_SERVER_ERROR,
+      MESSAGE_DICTIONARY.REQUEST_FAILED.replace('%s', error instanceof Error ? error.message : String(error))
+    );
   }
 }
 

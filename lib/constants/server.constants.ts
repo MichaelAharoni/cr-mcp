@@ -16,15 +16,24 @@ export const MESSAGE_DICTIONARY = {
   API_KEY_SET: 'GitHub API key has been set',
   OWNER_SET: 'GitHub owner has been set',
 
-  MISSING_REQUIRED_PARAMS: 'Missing required parameters. Please provide repo and branch',
+  // API Configuration messages
   MISSING_API_KEY: 'Error: GitHub API key is required. Please provide it using the --gh_api_key flag.',
   MISSING_OWNER: 'Error: GitHub owner is required. Please provide it using the --gh_owner flag.',
-  MISSING_REPO_PARAM: 'Missing required parameter: repo',
-  MISSING_INVALID_COMMENTS: 'Missing or invalid fixedComments array',
 
-  INVALID_COMMENT_ID: 'Each fixedComment must have a fixedCommentId (number)',
-  INVALID_COMMENT_DATA: 'Each fixedComment must have a fixedCommentId (number) and fixSummary (string)',
+  INVALID_COMMENT_ID: 'Invalid comment ID: %s',
 
+  // Validation messages
+  MISSING_REPO_PARAM: 'Repository name is required',
+  MISSING_BRANCH_PARAM: 'Branch name is required',
+  MISSING_INVALID_COMMENTS: 'Fixed comments must be a non-empty array',
+  INVALID_REPO_FORMAT:
+    'Invalid repository name format. Repository name can only contain alphanumeric characters, hyphens, underscores, and forward slashes',
+  INVALID_BRANCH_FORMAT:
+    'Invalid branch name format. Branch name can only contain alphanumeric characters, hyphens, underscores, and forward slashes',
+  INVALID_REPO_STRUCTURE:
+    "Invalid repository name structure. Repository name should be in the format 'owner/repo' or just 'repo'",
+
+  // Error messages
   FAILED_MARK_COMMENTS: 'Failed to mark comments as handled:',
   FAILED_FETCH_PR_COMMENTS: 'Failed to fetch PR comments:',
   FAILED_MARK_COMMENT: 'Failed to mark comment #%s as handled: %s',
@@ -35,10 +44,18 @@ export const MESSAGE_DICTIONARY = {
 
   TOOL_NOT_FOUND: 'Tool not found',
   NO_PR_FOR_BRANCH: 'No open pull request found for branch:',
-  REQUEST_FAILED: 'GitHub API request failed:',
-  API_ERROR: 'GitHub API error:',
-  ERROR_DETAILS: 'Error details:',
-  REQUEST_ERROR: 'Error in GitHub API request to',
+  REQUEST_FAILED: 'GitHub API request failed: %s',
+  API_ERROR: 'GitHub API error (HTTP %s): %s',
+  ERROR_DETAILS: 'Error details: %s',
+  REQUEST_ERROR: 'Error in GitHub API request to %s: %s',
+
+  // GitHub API specific errors
+  GITHUB_NOT_FOUND: 'GitHub resource not found. Please verify that the repository exists and you have access to it.',
+  GITHUB_UNAUTHORIZED: 'GitHub API authentication failed. Please check your API token.',
+  GITHUB_FORBIDDEN: 'Access forbidden. Please verify your permissions for this repository.',
+  GITHUB_RATE_LIMIT: 'GitHub API rate limit exceeded. Please try again later.',
+  GITHUB_SERVER_ERROR: 'GitHub server error. Please try again later.',
+  GITHUB_VALIDATION_FAILED: 'GitHub API validation failed: %s',
 };
 
 /**
@@ -47,6 +64,10 @@ export const MESSAGE_DICTIONARY = {
 export const STATUS_CODES = {
   OK: 200,
   BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
   NOT_FOUND: 404,
+  VALIDATION_FAILED: 422,
+  RATE_LIMIT: 429,
   INTERNAL_SERVER_ERROR: 500,
 };
