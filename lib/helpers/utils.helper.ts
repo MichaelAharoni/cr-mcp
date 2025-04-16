@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { GITHUB_API_URL, getGitHubHeaders, PR_REPLIES_RESPONSE_INSTRUCTIONS } from '../constants/github.constants';
+import { GITHUB_API_URL, getGitHubHeaders } from '../constants/github.constants';
+import { PR_REPLIES_RESPONSE_INSTRUCTIONS } from '../constants/pr-response-instructions.constants';
 import { logger, MESSAGE_DICTIONARY } from '../constants/common.constants';
 import { GitHubComment, GitHubPullRequest, BranchDetails, MarkCommentsResponse } from '../types/github.types';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';

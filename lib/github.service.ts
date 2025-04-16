@@ -1,4 +1,5 @@
-import { PR_COMMENTS_RESPONSE_INSTRUCTIONS, getGitHubOwner } from './constants/github.constants';
+import { getGitHubOwner } from './constants/github.constants';
+import { PR_COMMENTS_RESPONSE_INSTRUCTIONS } from './constants/pr-response-instructions.constants';
 import { BranchDetails, GitHubComment, GitHubReview, FixedComment, MarkCommentsResponse } from './types/github.types';
 import { logger, MESSAGE_DICTIONARY } from './constants/common.constants';
 import { simplifyGitHubComments } from './helpers/comments.helper';
