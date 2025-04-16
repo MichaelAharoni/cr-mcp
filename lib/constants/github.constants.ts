@@ -5,7 +5,7 @@ export const GITHUB_API_URL = 'https://api.github.com';
 export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
   // Initial Setup and Display
   `1. Display all unhandled PR comments in a clear, organized list`,
-  `2. Ask user if they want to handle all comments or specific ones`,
+  `2. Always ask the user if they want to handle all comments or specific ones`,
 
   // Comment Analysis and Context
   `3. For each comment, analyze its type and context before proceeding`,
@@ -26,7 +26,7 @@ export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
   `14. For unclear comments: request clarification before proceeding`,
   `15. Design each solution end-to-end, considering: a) Code best practices b) Existing logic reuse c) Unused variable removal d) Import fixes e) Cross-file impact f) Error verification`,
   `16. Ensure solution maintains existing functionality while implementing fixes`,
-  `17. Verify all changes for potential side effects and edge cases`,
+  `17. Verify all changes for potential side effects, edge cases, and errors`,
 
   // Git Operations
   `18. After handling comments, you must ask the user if they want you to commit and push the changes`,
