@@ -20,7 +20,7 @@ export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
   `10. For unclear comments: request clarification before proceeding`,
 
   // Git Operations
-  `11. After handling comments, ask user if they want to commit changes`,
+  `11. After handling comments, you must ask the user if they want you to commit and push the changes`,
   `12. If committing: suggest commit message and execute git commands`,
   `13. Git commands sequence: "git add ." -> "git commit -m <message>" -> "git push"`,
   `14. Handle any git push errors by analyzing and reporting to user`,
