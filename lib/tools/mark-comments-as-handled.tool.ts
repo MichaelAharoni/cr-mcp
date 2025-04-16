@@ -11,16 +11,9 @@ import { MARK_COMMENTS_DICTIONARY, TOOL_NAMES } from '../constants/tools.constan
 // Zod schema for mark-comments-as-handled tool input validation
 export const markCommentsAsHandledSchema = z.object({
   repo: z.string().min(1).describe(MARK_COMMENTS_DICTIONARY.REPO_DESCRIPTION),
-  fixedComments: z
-    .array(
-      z.object({
-        fixedCommentId: z.number().int().positive().describe(MARK_COMMENTS_DICTIONARY.COMMENT_ID_DESCRIPTION),
-        fixSummary: z.string().optional().describe(MARK_COMMENTS_DICTIONARY.SUMMARY_DESCRIPTION),
-        reaction: z.string().optional().default('rocket').describe(MARK_COMMENTS_DICTIONARY.REACTION_DESCRIPTION),
-      })
-    )
-    .min(1)
-    .describe(MARK_COMMENTS_DICTIONARY.FIXED_COMMENTS_DESCRIPTION),
+  commentIds: z.array(z.number().int().positive()).min(1).describe('Array of comment IDs to mark as handled'),
+  reaction: z.string().optional().default('thumbsdown').describe('Reaction to add to the comment'),
+  message: z.string().optional().describe('Optional message to add to the comment'),
 });
 
 // Convert Zod schema to JSON schema
@@ -43,7 +36,14 @@ export async function handleMarkCommentsAsHandled(params: unknown): Promise<{
 }> {
   try {
     // Parse and validate the input parameters using Zod
-    const { repo, fixedComments } = markCommentsAsHandledSchema.parse(params);
+    const { repo, commentIds, reaction, message } = markCommentsAsHandledSchema.parse(params);
+
+    // Transform the input into the format expected by handleFixedComments
+    const fixedComments = commentIds.map((commentId) => ({
+      fixedCommentId: commentId,
+      reaction: reaction || 'thumbsdown',
+      fixSummary: message || 'Hi, I am the bos here! 👎',
+    }));
 
     // Additional validation using existing validator
     validateMarkCommentsInput(repo, fixedComments);
