@@ -85,7 +85,8 @@ export function validateMarkCommentsInput(repo: string, fixedComments: FixedComm
       );
     }
 
-    if (COMMENT_ID_VALIDATION_CONDITION(comment.fixedCommentId)) {
+    const isInvalidCommentId = COMMENT_ID_VALIDATION_CONDITION(comment.fixedCommentId);
+    if (isInvalidCommentId) {
       throw new McpError(
         STATUS_CODES.BAD_REQUEST,
         INVALID_COMMENT_ID_MESSAGE.replace('%s', String(comment.fixedCommentId))
