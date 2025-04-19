@@ -107,14 +107,11 @@ export async function markCommentsAsHandled({
   owner,
   repo,
   fixedComments,
-}: {
-  owner: string;
-  repo: string;
-  fixedComments: FixedComment[];
-}): Promise<Array<{ commentId: number; success: boolean; message: string; error?: string }>> {
+}: MarkCommentsOptions): Promise<MarkCommentsResponse[]> {
   try {
+    const fixedCommentsCount = fixedComments.length;
     logger.info(
-      MESSAGE_DICTIONARY.MARKING_COMMENTS_HANDLED.replace('%s', String(fixedComments.length))
+      MESSAGE_DICTIONARY.MARKING_COMMENTS_HANDLED.replace('%s', String(fixedCommentsCount))
         .replace('%s', owner)
         .replace('%s', repo)
     );
@@ -172,14 +169,8 @@ export async function markCommentsAsHandled({
 
     return results;
   } catch (error) {
-    if (error instanceof McpError) {
-      throw error;
-    }
-
-    throw new McpError(
-      STATUS_CODES.INTERNAL_SERVER_ERROR,
-      `Failed to mark comments as handled: ${error instanceof Error ? error.message : String(error)}`
-    );
+    const errorMessage = error instanceof Error ? error.message : MESSAGE_DICTIONARY.REQUEST_ERROR;
+    throw new McpError(STATUS_CODES.INTERNAL_SERVER_ERROR, errorMessage);
   }
 }
 

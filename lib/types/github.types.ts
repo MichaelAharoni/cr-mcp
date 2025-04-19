@@ -13,14 +13,16 @@ export interface FetchCommentsOptions {
  */
 export interface GitHubComment {
   id: number;
+  body: string;
   user: {
     login: string;
   };
-  body: string;
   created_at: string;
   updated_at: string;
   path?: string;
   position?: number | null;
+  original_position?: number | null;
+  pull_request_review_id?: number;
   line?: number | null;
   commit_id?: string;
   diff_hunk?: string;
@@ -30,8 +32,6 @@ export interface GitHubComment {
   original_line?: number | null;
   start_side?: string;
   side?: string;
-  pull_request_review_id?: number;
-  original_position?: number | null;
   pull_request_url: string;
 }
 
@@ -56,11 +56,8 @@ export interface GitHubReview {
   user: {
     login: string;
   };
-  body: string;
-  state: string; // "APPROVED", "COMMENTED", "CHANGES_REQUESTED", "DISMISSED", etc.
+  state: string;
   submitted_at: string;
-  commit_id: string;
-  pull_request_url: string;
 }
 
 /**
@@ -68,8 +65,9 @@ export interface GitHubReview {
  */
 export interface BranchDetails {
   name: string;
-  sha: string;
-  protected: boolean;
+  commit: {
+    sha: string;
+  };
 }
 
 /**
@@ -99,25 +97,43 @@ export interface FixedComment {
  * Response from marking comments as handled
  */
 export interface MarkCommentsResponse {
-  /**
-   * Results for each comment
-   */
-  results: {
-    commentId: number;
-    success: boolean;
-    message: string;
-  }[];
+  commentId: number;
+  success: boolean;
+  message: string;
+  error?: string;
+}
 
-  /**
-   * Summary of the operation
-   */
-  summary: {
-    total: number;
-    successful: number;
-    failed: number;
-  };
-  /**
-   * Steps forward for the user
-   */
-  stepsForward: string[];
+export interface SimplifiedComment {
+  commentNumber: number;
+  commentId: number;
+  filePath: string;
+  fromUserName: string;
+  commentMessage: string;
+  isHandled: boolean;
+  startLine: number;
+  endLine: number;
+  creationTime: string;
+}
+
+export interface FetchPrCommentsOptions {
+  owner: string;
+  repo: string;
+  branch: string;
+}
+
+export interface MarkCommentsOptions {
+  owner: string;
+  repo: string;
+  fixedComments: FixedComment[];
+}
+
+export interface GetPrCommentsOptions {
+  repo: string;
+  branch: string;
+  explicitPrAuthor?: string;
+}
+
+export interface HandleFixedCommentsOptions {
+  repo: string;
+  fixedComments: FixedComment[];
 }

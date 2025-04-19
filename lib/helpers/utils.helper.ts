@@ -1,10 +1,11 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { GITHUB_API_URL, getGitHubHeaders } from '../constants/github.constants';
-import { PR_REPLIES_RESPONSE_INSTRUCTIONS } from '../constants/pr-response-instructions.constants';
-import { logger, MESSAGE_DICTIONARY } from '../constants/common.constants';
-import { GitHubComment, GitHubPullRequest, BranchDetails, MarkCommentsResponse } from '../types/github.types';
+import { MESSAGE_DICTIONARY, STATUS_CODES } from '../constants/server.constants';
+import { BranchDetails, MarkCommentsResponse, GitHubComment, GitHubPullRequest } from '../types/github.types';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
-import { STATUS_CODES } from '../constants/server.constants';
+import { logger } from '../logger';
+import { PR_REPLIES_RESPONSE_INSTRUCTIONS } from '../constants/pr-response-instructions.constants';
+import { GitHubComment, GitHubPullRequest, BranchDetails, MarkCommentsResponse } from '../types/github.types';
 
 /**
  * Get appropriate error message based on HTTP status code
@@ -62,7 +63,7 @@ export async function githubApiRequest<T>(
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status || STATUS_CODES.INTERNAL_SERVER_ERROR;
-      const statusText = error.response?.statusText || 'Unknown error';
+      const statusText = error.response?.statusText || MESSAGE_DICTIONARY.UNKNOWN_ERROR;
       const errorData = error.response?.data || {};
       const errorMessage = errorData.message || statusText;
 
@@ -104,13 +105,12 @@ export function extractPullNumberFromComment(comment: GitHubComment): number | u
 /**
  * Transform GitHub API branch data into simplified BranchDetails
  */
-export function transformBranchData(
-  branches: { name: string; commit: { sha: string }; protected: boolean }[]
-): BranchDetails[] {
+export function transformBranchData(branches: { name: string; commit: { sha: string } }[]): BranchDetails[] {
   return branches.map((branch) => ({
     name: branch.name,
-    sha: branch.commit.sha,
-    protected: branch.protected,
+    commit: {
+      sha: branch.commit.sha,
+    },
   }));
 }
 
@@ -152,19 +152,12 @@ export function findPullRequestByBranch(
  */
 export function processHandledCommentResults(
   results: Array<{ commentId: number; success: boolean; message: string }>
-): MarkCommentsResponse {
-  const successful = results.filter((result) => result.success).length;
-  const failed = results.length - successful;
-
-  return {
-    results,
-    summary: {
-      total: results.length,
-      successful,
-      failed,
-    },
-    stepsForward: PR_REPLIES_RESPONSE_INSTRUCTIONS,
-  };
+): MarkCommentsResponse[] {
+  return results.map((result) => ({
+    commentId: result.commentId,
+    success: result.success,
+    message: result.message,
+  }));
 }
 
 /**

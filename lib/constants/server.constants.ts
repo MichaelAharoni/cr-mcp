@@ -48,6 +48,7 @@ export const MESSAGE_DICTIONARY = {
   API_ERROR: 'GitHub API error (HTTP %s): %s',
   ERROR_DETAILS: 'Error details: %s',
   REQUEST_ERROR: 'Error in GitHub API request to %s: %s',
+  UNKNOWN_ERROR: 'Unknown error',
 
   // GitHub API specific errors
   GITHUB_NOT_FOUND: 'GitHub resource not found. Please verify that the repository exists and you have access to it.',
