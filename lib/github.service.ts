@@ -1,6 +1,13 @@
 import { getGitHubOwner } from './constants/github.constants';
 import { PR_COMMENTS_RESPONSE_INSTRUCTIONS } from './constants/pr-response-instructions.constants';
-import { BranchDetails, GitHubComment, GitHubReview, FixedComment, MarkCommentsResponse } from './types/github.types';
+import {
+  BranchDetails,
+  GitHubComment,
+  GitHubReview,
+  FixedComment,
+  MarkCommentsResponse,
+  MarkCommentsOptions,
+} from './types/github.types';
 import { logger, MESSAGE_DICTIONARY } from './constants/common.constants';
 import { simplifyGitHubComments } from './helpers/comments.helper';
 import { SimplifiedComment } from './types';
@@ -118,7 +125,7 @@ export async function markCommentsAsHandled({
 
     // Process each fixed comment
     const results = await Promise.all(
-      fixedComments.map(async (comment) => {
+      fixedComments.map(async (comment: FixedComment) => {
         const { fixedCommentId, fixSummary, reaction = 'rocket' } = comment;
 
         try {
@@ -226,7 +233,7 @@ export async function getPullRequestComments(options: {
 export async function handleFixedComments(options: {
   repo: string;
   fixedComments: FixedComment[];
-}): Promise<MarkCommentsResponse> {
+}): Promise<MarkCommentsResponse[]> {
   const { repo: rawRepo, fixedComments } = options;
 
   // Clean repository name (remove owner if present)

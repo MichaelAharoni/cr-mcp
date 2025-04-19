@@ -103,18 +103,6 @@ export interface MarkCommentsResponse {
   error?: string;
 }
 
-export interface SimplifiedComment {
-  commentNumber: number;
-  commentId: number;
-  filePath: string;
-  fromUserName: string;
-  commentMessage: string;
-  isHandled: boolean;
-  startLine: number;
-  endLine: number;
-  creationTime: string;
-}
-
 export interface FetchPrCommentsOptions {
   owner: string;
   repo: string;
