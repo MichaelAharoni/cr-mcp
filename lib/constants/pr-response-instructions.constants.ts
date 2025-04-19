@@ -31,9 +31,9 @@ export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
   `21. Handle any git push errors by analyzing and reporting to user`,
 
   // Final Steps
-  `22. After git operations, ask user if they want to mark comments as handled`,
+  `22. After git operations, ask user if they want to mark comments as handled (Never force the user to mark comments as handled, only ask if they want to)`,
   `23. For marking comments: request confirmation and reaction emoji preference`,
-  `24. Never execute git operations or mark comments without explicit user confirmation`,
+  `24. **Never execute git operations or mark comments without explicit user confirmation**`,
 ];
 
 export const PR_REPLIES_RESPONSE_INSTRUCTIONS = [

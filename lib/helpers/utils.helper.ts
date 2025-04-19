@@ -130,7 +130,7 @@ export function getFullRepoName(owner: string, repo: string): string {
  * Format a reply for a handled comment
  */
 export function formatHandledReply(fixSummary: string): string {
-  return `Done - ${fixSummary} (By AI)`;
+  return `${fixSummary} (By AI)`;
 }
 
 /**
