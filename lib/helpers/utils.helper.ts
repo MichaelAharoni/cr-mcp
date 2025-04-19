@@ -1,11 +1,9 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { GITHUB_API_URL, getGitHubHeaders } from '../constants/github.constants';
-import { MESSAGE_DICTIONARY, STATUS_CODES } from '../constants/server.constants';
-import { BranchDetails, MarkCommentsResponse, GitHubComment, GitHubPullRequest } from '../types/github.types';
-import { McpError } from '@modelcontextprotocol/sdk/types.js';
-import { logger } from '../logger';
-import { PR_REPLIES_RESPONSE_INSTRUCTIONS } from '../constants/pr-response-instructions.constants';
+import { logger, MESSAGE_DICTIONARY } from '../constants/common.constants';
 import { GitHubComment, GitHubPullRequest, BranchDetails, MarkCommentsResponse } from '../types/github.types';
+import { McpError } from '@modelcontextprotocol/sdk/types.js';
+import { STATUS_CODES } from '../constants/server.constants';
 
 /**
  * Get appropriate error message based on HTTP status code
@@ -63,7 +61,7 @@ export async function githubApiRequest<T>(
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status || STATUS_CODES.INTERNAL_SERVER_ERROR;
-      const statusText = error.response?.statusText || MESSAGE_DICTIONARY.UNKNOWN_ERROR;
+      const statusText = error.response?.statusText || 'Unknown error';
       const errorData = error.response?.data || {};
       const errorMessage = errorData.message || statusText;
 

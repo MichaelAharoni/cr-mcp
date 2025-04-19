@@ -1,13 +1,6 @@
 import { getGitHubOwner } from './constants/github.constants';
 import { PR_COMMENTS_RESPONSE_INSTRUCTIONS } from './constants/pr-response-instructions.constants';
-import {
-  BranchDetails,
-  GitHubComment,
-  GitHubReview,
-  FixedComment,
-  MarkCommentsResponse,
-  MarkCommentsOptions,
-} from './types/github.types';
+import { BranchDetails, GitHubComment, GitHubReview, FixedComment, MarkCommentsResponse } from './types/github.types';
 import { logger, MESSAGE_DICTIONARY } from './constants/common.constants';
 import { simplifyGitHubComments } from './helpers/comments.helper';
 import { SimplifiedComment } from './types';
@@ -114,18 +107,21 @@ export async function markCommentsAsHandled({
   owner,
   repo,
   fixedComments,
-}: MarkCommentsOptions): Promise<MarkCommentsResponse[]> {
+}: {
+  owner: string;
+  repo: string;
+  fixedComments: FixedComment[];
+}): Promise<Array<{ commentId: number; success: boolean; message: string; error?: string }>> {
   try {
-    const fixedCommentsCount = fixedComments.length;
     logger.info(
-      MESSAGE_DICTIONARY.MARKING_COMMENTS_HANDLED.replace('%s', String(fixedCommentsCount))
+      MESSAGE_DICTIONARY.MARKING_COMMENTS_HANDLED.replace('%s', String(fixedComments.length))
         .replace('%s', owner)
         .replace('%s', repo)
     );
 
     // Process each fixed comment
     const results = await Promise.all(
-      fixedComments.map(async (comment: FixedComment) => {
+      fixedComments.map(async (comment) => {
         const { fixedCommentId, fixSummary, reaction = 'rocket' } = comment;
 
         try {
@@ -176,8 +172,14 @@ export async function markCommentsAsHandled({
 
     return results;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : MESSAGE_DICTIONARY.REQUEST_ERROR;
-    throw new McpError(STATUS_CODES.INTERNAL_SERVER_ERROR, errorMessage);
+    if (error instanceof McpError) {
+      throw error;
+    }
+
+    throw new McpError(
+      STATUS_CODES.INTERNAL_SERVER_ERROR,
+      `Failed to mark comments as handled: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 
