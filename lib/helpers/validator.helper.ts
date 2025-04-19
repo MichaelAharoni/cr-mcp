@@ -1,6 +1,7 @@
 import { FixedComment, GitHubPullRequest } from '../types/github.types';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { MESSAGE_DICTIONARY, STATUS_CODES } from '../constants/server.constants';
+import { logger } from '../constants/common.constants';
 
 /**
  * Validator service for validating API inputs and request parameters
@@ -56,9 +57,14 @@ export function validateFixPrCommentsInput(repo: string, branch: string): void {
  * @throws McpError if validation fails
  */
 export function validateMarkCommentsInput(repo: string, fixedComments: FixedComment[]): void {
+  logger.debug(
+    `Validating mark comments input - repo: ${repo}, fixedComments type: ${typeof fixedComments}, isArray: ${Array.isArray(fixedComments)}`
+  );
+
   validateRepo(repo);
 
   if (!fixedComments || !Array.isArray(fixedComments)) {
+    logger.error(`Invalid fixedComments: ${JSON.stringify(fixedComments)}`);
     throw new McpError(STATUS_CODES.BAD_REQUEST, MESSAGE_DICTIONARY.MISSING_INVALID_COMMENTS);
   }
 
@@ -68,6 +74,7 @@ export function validateMarkCommentsInput(repo: string, fixedComments: FixedComm
 
   // Validate each fixed comment entry
   for (const comment of fixedComments) {
+    logger.debug(`Validating comment: ${JSON.stringify(comment)}`);
     if (typeof comment.fixedCommentId !== 'number') {
       throw new McpError(
         STATUS_CODES.BAD_REQUEST,

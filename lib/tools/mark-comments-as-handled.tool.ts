@@ -7,19 +7,48 @@ import { STATUS_CODES } from '../constants/server.constants';
 import { handleFixedComments } from '../github.service';
 import { validateMarkCommentsInput } from '../helpers/validator.helper';
 import { MARK_COMMENTS_DICTIONARY, TOOL_NAMES } from '../constants/tools.constants';
+import { FixedComment } from '../types/github.types';
+
+// Helper function to parse JSON string if needed
+function parseFixedComments(input: string | FixedComment[]): FixedComment[] {
+  if (typeof input === 'string') {
+    try {
+      return JSON.parse(input);
+    } catch (error) {
+      logger.error(`Failed to parse fixedComments: ${error}`);
+      throw new McpError(STATUS_CODES.BAD_REQUEST, 'Invalid JSON string for fixedComments');
+    }
+  }
+
+  return input;
+}
 
 // Zod schema for mark-comments-as-handled tool input validation
 export const markCommentsAsHandledSchema = z.object({
   repo: z.string().min(1).describe(MARK_COMMENTS_DICTIONARY.REPO_DESCRIPTION),
   fixedComments: z
-    .array(
-      z.object({
-        fixedCommentId: z.number().int().positive().describe(MARK_COMMENTS_DICTIONARY.COMMENT_ID_DESCRIPTION),
-        fixSummary: z.string().optional().describe(MARK_COMMENTS_DICTIONARY.SUMMARY_DESCRIPTION),
-        reaction: z.string().optional().default('rocket').describe(MARK_COMMENTS_DICTIONARY.REACTION_DESCRIPTION),
-      })
+    .union([
+      z.string(),
+      z.array(
+        z.object({
+          fixedCommentId: z.number().int().positive().describe(MARK_COMMENTS_DICTIONARY.COMMENT_ID_DESCRIPTION),
+          fixSummary: z.string().optional().describe(MARK_COMMENTS_DICTIONARY.SUMMARY_DESCRIPTION),
+          reaction: z.string().optional().default('rocket').describe(MARK_COMMENTS_DICTIONARY.REACTION_DESCRIPTION),
+        })
+      ),
+    ])
+    .transform(parseFixedComments)
+    .pipe(
+      z
+        .array(
+          z.object({
+            fixedCommentId: z.number().int().positive().describe(MARK_COMMENTS_DICTIONARY.COMMENT_ID_DESCRIPTION),
+            fixSummary: z.string().optional().describe(MARK_COMMENTS_DICTIONARY.SUMMARY_DESCRIPTION),
+            reaction: z.string().optional().default('rocket').describe(MARK_COMMENTS_DICTIONARY.REACTION_DESCRIPTION),
+          })
+        )
+        .min(1)
     )
-    .min(1)
     .describe(MARK_COMMENTS_DICTIONARY.FIXED_COMMENTS_DESCRIPTION),
 });
 
