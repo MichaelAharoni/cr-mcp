@@ -50,6 +50,9 @@ export function validateFixPrCommentsInput(repo: string, branch: string): void {
   }
 }
 
+const INVALID_COMMENT_ID_MESSAGE = 'Invalid comment ID: %s';
+const COMMENT_ID_VALIDATION_CONDITION = (commentId: number): boolean => commentId <= 0;
+
 /**
  * Validates required input for mark_comments_as_handled tool
  * @param repo Repository name
@@ -78,14 +81,14 @@ export function validateMarkCommentsInput(repo: string, fixedComments: FixedComm
     if (typeof comment.fixedCommentId !== 'number') {
       throw new McpError(
         STATUS_CODES.BAD_REQUEST,
-        MESSAGE_DICTIONARY.INVALID_COMMENT_ID.replace('%s', String(comment.fixedCommentId))
+        INVALID_COMMENT_ID_MESSAGE.replace('%s', String(comment.fixedCommentId))
       );
     }
 
-    if (comment.fixedCommentId <= 0) {
+    if (COMMENT_ID_VALIDATION_CONDITION(comment.fixedCommentId)) {
       throw new McpError(
         STATUS_CODES.BAD_REQUEST,
-        MESSAGE_DICTIONARY.INVALID_COMMENT_ID.replace('%s', String(comment.fixedCommentId))
+        INVALID_COMMENT_ID_MESSAGE.replace('%s', String(comment.fixedCommentId))
       );
     }
   }

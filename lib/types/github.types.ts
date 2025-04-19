@@ -103,6 +103,12 @@ export interface MarkCommentsResponse {
   error?: string;
 }
 
+export interface HandledCommentResult {
+  commentId: number;
+  success: boolean;
+  message: string;
+}
+
 export interface FetchPrCommentsOptions {
   owner: string;
   repo: string;

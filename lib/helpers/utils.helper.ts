@@ -1,7 +1,13 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { GITHUB_API_URL, getGitHubHeaders } from '../constants/github.constants';
 import { logger, MESSAGE_DICTIONARY } from '../constants/common.constants';
-import { GitHubComment, GitHubPullRequest, BranchDetails, MarkCommentsResponse } from '../types/github.types';
+import {
+  GitHubComment,
+  GitHubPullRequest,
+  BranchDetails,
+  MarkCommentsResponse,
+  HandledCommentResult,
+} from '../types/github.types';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { STATUS_CODES } from '../constants/server.constants';
 
@@ -148,9 +154,7 @@ export function findPullRequestByBranch(
 /**
  * Process results of marking comments as handled
  */
-export function processHandledCommentResults(
-  results: Array<{ commentId: number; success: boolean; message: string }>
-): MarkCommentsResponse[] {
+export function processHandledCommentResults(results: HandledCommentResult[]): MarkCommentsResponse[] {
   return results.map((result) => ({
     commentId: result.commentId,
     success: result.success,
