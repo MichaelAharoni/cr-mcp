@@ -1,9 +1,9 @@
 // String constants for the mark-comments-as-handled tool
 export const MARK_COMMENTS_DICTIONARY = {
-  DESCRIPTION: 'Mark GitHub PR comments as handled by replying with a resolution summary and adding a reaction',
+  DESCRIPTION:
+    'Mark GitHub PR comments as handled by replying with a resolution summary and adding a reaction, CAN NOT BE RUN WITHOUT AN EXPLICIT REQUEST FROM THE USER',
   REPO_DESCRIPTION: 'The GitHub repository name containing the PR comments',
-  FIXED_COMMENTS_DESCRIPTION:
-    'List of comments to mark as fixed, CAN NOT BE RUN WITHOUT AN EXPLICIT REQUEST FROM THE USER',
+  FIXED_COMMENTS_DESCRIPTION: 'List of comments to mark as fixed',
   COMMENT_ID_DESCRIPTION: 'The ID of the GitHub comment that has been fixed',
   SUMMARY_DESCRIPTION: 'Optional: A concise summary (3-15 words) of how the comment was addressed',
   REACTION_DESCRIPTION:
