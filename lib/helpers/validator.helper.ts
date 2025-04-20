@@ -1,6 +1,7 @@
 import { FixedComment, GitHubPullRequest } from '../types/github.types';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { MESSAGE_DICTIONARY, STATUS_CODES } from '../constants/server.constants';
+import { logger } from '../constants/common.constants';
 
 /**
  * Validator service for validating API inputs and request parameters
@@ -49,6 +50,9 @@ export function validateFixPrCommentsInput(repo: string, branch: string): void {
   }
 }
 
+export const INVALID_COMMENT_ID_MESSAGE = 'Invalid comment ID: %s';
+export const COMMENT_ID_VALIDATION_CONDITION = (commentId: number): boolean => commentId <= 0;
+
 /**
  * Validates required input for mark_comments_as_handled tool
  * @param repo Repository name
@@ -56,9 +60,14 @@ export function validateFixPrCommentsInput(repo: string, branch: string): void {
  * @throws McpError if validation fails
  */
 export function validateMarkCommentsInput(repo: string, fixedComments: FixedComment[]): void {
+  logger.debug(
+    `Validating mark comments input - repo: ${repo}, fixedComments type: ${typeof fixedComments}, isArray: ${Array.isArray(fixedComments)}`
+  );
+
   validateRepo(repo);
 
   if (!fixedComments || !Array.isArray(fixedComments)) {
+    logger.error(`Invalid fixedComments: ${JSON.stringify(fixedComments)}`);
     throw new McpError(STATUS_CODES.BAD_REQUEST, MESSAGE_DICTIONARY.MISSING_INVALID_COMMENTS);
   }
 
@@ -68,17 +77,19 @@ export function validateMarkCommentsInput(repo: string, fixedComments: FixedComm
 
   // Validate each fixed comment entry
   for (const comment of fixedComments) {
+    logger.debug(`Validating comment: ${JSON.stringify(comment)}`);
     if (typeof comment.fixedCommentId !== 'number') {
       throw new McpError(
         STATUS_CODES.BAD_REQUEST,
-        MESSAGE_DICTIONARY.INVALID_COMMENT_ID.replace('%s', String(comment.fixedCommentId))
+        INVALID_COMMENT_ID_MESSAGE.replace('%s', String(comment.fixedCommentId))
       );
     }
 
-    if (comment.fixedCommentId <= 0) {
+    const isInvalidCommentId = COMMENT_ID_VALIDATION_CONDITION(comment.fixedCommentId);
+    if (isInvalidCommentId) {
       throw new McpError(
         STATUS_CODES.BAD_REQUEST,
-        MESSAGE_DICTIONARY.INVALID_COMMENT_ID.replace('%s', String(comment.fixedCommentId))
+        INVALID_COMMENT_ID_MESSAGE.replace('%s', String(comment.fixedCommentId))
       );
     }
   }

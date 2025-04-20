@@ -1,8 +1,13 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { GITHUB_API_URL, getGitHubHeaders } from '../constants/github.constants';
-import { PR_REPLIES_RESPONSE_INSTRUCTIONS } from '../constants/pr-response-instructions.constants';
 import { logger, MESSAGE_DICTIONARY } from '../constants/common.constants';
-import { GitHubComment, GitHubPullRequest, BranchDetails, MarkCommentsResponse } from '../types/github.types';
+import {
+  GitHubComment,
+  GitHubPullRequest,
+  BranchDetails,
+  MarkCommentsResponse,
+  HandledCommentResult,
+} from '../types/github.types';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { STATUS_CODES } from '../constants/server.constants';
 
@@ -104,13 +109,12 @@ export function extractPullNumberFromComment(comment: GitHubComment): number | u
 /**
  * Transform GitHub API branch data into simplified BranchDetails
  */
-export function transformBranchData(
-  branches: { name: string; commit: { sha: string }; protected: boolean }[]
-): BranchDetails[] {
+export function transformBranchData(branches: BranchDetails[]): BranchDetails[] {
   return branches.map((branch) => ({
     name: branch.name,
-    sha: branch.commit.sha,
-    protected: branch.protected,
+    commit: {
+      sha: branch.commit.sha,
+    },
   }));
 }
 
@@ -132,7 +136,7 @@ export function getFullRepoName(owner: string, repo: string): string {
  * Format a reply for a handled comment
  */
 export function formatHandledReply(fixSummary: string): string {
-  return `Done - ${fixSummary} (By AI)`;
+  return `${fixSummary} (By AI)`;
 }
 
 /**
@@ -150,21 +154,12 @@ export function findPullRequestByBranch(
 /**
  * Process results of marking comments as handled
  */
-export function processHandledCommentResults(
-  results: Array<{ commentId: number; success: boolean; message: string }>
-): MarkCommentsResponse {
-  const successful = results.filter((result) => result.success).length;
-  const failed = results.length - successful;
-
-  return {
-    results,
-    summary: {
-      total: results.length,
-      successful,
-      failed,
-    },
-    stepsForward: PR_REPLIES_RESPONSE_INSTRUCTIONS,
-  };
+export function processHandledCommentResults(results: HandledCommentResult[]): MarkCommentsResponse[] {
+  return results.map((result) => ({
+    commentId: result.commentId,
+    success: result.success,
+    message: result.message,
+  }));
 }
 
 /**

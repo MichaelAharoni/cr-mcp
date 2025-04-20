@@ -9,19 +9,18 @@ import { validateMarkCommentsInput } from '../helpers/validator.helper';
 import { MARK_COMMENTS_DICTIONARY, TOOL_NAMES } from '../constants/tools.constants';
 
 // Zod schema for mark-comments-as-handled tool input validation
-export const markCommentsAsHandledSchema = z.object({
-  repo: z.string().min(1).describe(MARK_COMMENTS_DICTIONARY.REPO_DESCRIPTION),
-  fixedComments: z
-    .array(
+export const markCommentsAsHandledSchema = z
+  .object({
+    repo: z.string().min(1).describe(MARK_COMMENTS_DICTIONARY.REPO_DESCRIPTION),
+    fixedComments: z.array(
       z.object({
         fixedCommentId: z.number().int().positive().describe(MARK_COMMENTS_DICTIONARY.COMMENT_ID_DESCRIPTION),
         fixSummary: z.string().optional().describe(MARK_COMMENTS_DICTIONARY.SUMMARY_DESCRIPTION),
         reaction: z.string().optional().default('rocket').describe(MARK_COMMENTS_DICTIONARY.REACTION_DESCRIPTION),
       })
-    )
-    .min(1)
-    .describe(MARK_COMMENTS_DICTIONARY.FIXED_COMMENTS_DESCRIPTION),
-});
+    ),
+  })
+  .describe(MARK_COMMENTS_DICTIONARY.FIXED_COMMENTS_DESCRIPTION);
 
 // Convert Zod schema to JSON schema
 export const markCommentsAsHandledJsonSchema = zodToJsonSchema(markCommentsAsHandledSchema, {
@@ -43,7 +42,8 @@ export async function handleMarkCommentsAsHandled(params: unknown): Promise<{
 }> {
   try {
     // Parse and validate the input parameters using Zod
-    const { repo, fixedComments } = markCommentsAsHandledSchema.parse(params);
+    const parsedParams = typeof params === 'string' ? JSON.parse(params) : params;
+    const { repo, fixedComments } = markCommentsAsHandledSchema.parse(parsedParams);
 
     // Additional validation using existing validator
     validateMarkCommentsInput(repo, fixedComments);
