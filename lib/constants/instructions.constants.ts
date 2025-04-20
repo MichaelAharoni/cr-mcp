@@ -34,10 +34,7 @@ export const PR_COMMENTS_RESPONSE_INSTRUCTIONS = [
   `24. Handle any git push errors by analyzing and reporting to user`,
 
   // Final Steps
-  `25. Never force the user to mark comments as handled, only ask if they want to`,
-  `26. After git operations, ask user if they want to mark comments as handled (Never force the user to mark comments as handled, only ask if they want to)`,
-  `27. **Never execute git operations or mark comments without explicit user confirmation**`,
-  `28. **STOP and ask for clarification if any part of the process requires understanding of external systems, repositories, or unclear context**`,
+  `25. **STOP and ask for clarification if any part of the process requires understanding of external systems, repositories, or unclear context**`,
 ];
 
 export const PR_REPLIES_RESPONSE_INSTRUCTIONS = [
