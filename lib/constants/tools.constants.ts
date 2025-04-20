@@ -5,9 +5,10 @@ export const MARK_COMMENTS_DICTIONARY = {
   REPO_DESCRIPTION: 'The GitHub repository name containing the PR comments',
   FIXED_COMMENTS_DESCRIPTION: 'List of comments to mark as fixed',
   COMMENT_ID_DESCRIPTION: 'The ID of the GitHub comment that has been fixed',
-  SUMMARY_DESCRIPTION: 'Optional: A concise summary (3-15 words) of how the comment was addressed',
+  SUMMARY_DESCRIPTION:
+    'Optional: A concise summary (3-15 words) of how the comment was addressed (e.g., "Removed debug code", "Improved code readability", "Fixed syntax error"), Reply as a real human would do, for example, "Done - Removed debug code" or "code readability" or "Done - Fixed syntax error" or "Thanks for the positive feedback !"',
   REACTION_DESCRIPTION:
-    'Optional: The reaction to add (e.g., "+1","-1","laugh","confused","heart","hooray","rocket","eyes"). Default: rocket',
+    'Optional: The reaction to add (e.g., "+1","-1","laugh","confused","heart","hooray","rocket","eyes"). Default: rocket, should be set to "hooray" or "heart" if the comment is a positive feedback',
 };
 
 // String constants for the fix-pr-comments tool

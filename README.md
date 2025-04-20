@@ -42,23 +42,20 @@ Replace `<YOUR_GITHUB_API_KEY>` with your actual GitHub API key and `<OWNER_NAME
 
 You just need to ask the agent "fix my pr comments", and here are the results:
 
-![PR Comments Analysis](./assets/images/example01.png)
-The agent analyzes the PR comments and identifies actionable items:
-- Filters out positive feedback emoji comments
-- Identifies development-only code that should be removed
-- Spots code structure improvements like unnecessary `else` statements
+![List Relevant Comments](./assets/images/list-relevant-comments.png)
+The agent lists all relevant PR comments that require action, filtering out non-actionable feedback and highlighting what needs to be addressed.
 
-![PR Comments Fixes](./assets/images/example02.png)
-The agent automatically implements the necessary fixes:
-- Removes debug code showing domain URL from the product list page
-- Improves code structure by removing unnecessary `else` statement in the navigation helper
+![Fixing Comments](./assets/images/fixing-comments.png)
+The agent automatically implements the necessary fixes for the actionable comments, such as removing debug code or improving code structure.
 
-![PR Comments Handled](./assets/images/example03.png)
-After making the changes, the agent:
-- Marks comments as handled with descriptive summaries
-- Adds rocket emoji reactions to show completion
-- Stages the changes and suggests an appropriate commit message
-- Offers to push the changes to your branch
+![Stops to Get Context](./assets/images/stops-to-get-context.png)
+If a comment requires additional context or cross-file changes, the agent pauses and requests the necessary information from you before proceeding.
+
+![Fixing Summarisation](./assets/images/fixing-summarisatio.png)
+The agent summarizes the fixes and ensures all actionable comments are addressed, preparing to mark them as handled.
+
+![Reply to Comments and Git Commit](./assets/images/reply-to-comments+git-commit.png)
+After making the changes, the agent marks comments as handled with descriptive summaries, adds rocket emoji reactions, stages the changes, suggests a commit message, and offers to push the changes to your branch.
 
 This automated workflow helps streamline the PR review process by handling common code review feedback without manual intervention.
 
