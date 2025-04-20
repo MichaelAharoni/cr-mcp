@@ -14,8 +14,27 @@ This tool helps streamline the PR review workflow by:
 
 ### VS Code MCP Configuration
 
-You can add this server to your VS Code MCP configuration by adding the following to your `.vscode/mcp.json` file:
+You can add this server to your Cursor / VS Code MCP configuration by adding the following:
+to your `.cursor/mcp.json` file:
+```json 
+{
+    "mcpServers": {
+        "github-pr-comments": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "cr-mcp",
+                "--gh_api_key=<YOUR_GITHUB_API_KEY>", // to get one -> https://github.com/settings/tokens/new
+                "--gh_owner=<OWNER_NAME-(Organization or a username)>", // (https://github.com/{OWNER-NAME}/repo-name).
 
+                "--stderr",
+                "--debug"
+            ]
+        }
+    }
+}
+
+to your `.vscode/mcp.json` file:
 ```json
 {
     "servers": {
@@ -25,7 +44,7 @@ You can add this server to your VS Code MCP configuration by adding the followin
             "args": [
                 "cr-mcp",
                 "--gh_api_key=<YOUR_GITHUB_API_KEY>", // to get one -> https://github.com/settings/tokens/new
-                "--gh_owner=<OWNER_NAME-(Organization or a username)>",
+                "--gh_owner=<OWNER_NAME-(Organization or a username)>", // (https://github.com/{OWNER-NAME}/repo-name).
                 "--stderr",
                 "--debug"
             ]
@@ -34,7 +53,7 @@ You can add this server to your VS Code MCP configuration by adding the followin
 }
 ```
 
-Replace `<YOUR_GITHUB_API_KEY>` with your actual GitHub API key and `<OWNER_NAME-(Organization or a username)>` with your GitHub organization or username.
+Replace `<YOUR_GITHUB_API_KEY>` with your actual GitHub API key and `<OWNER_NAME-(Organization or a username)>` with your GitHub organization or username (https://github.com/{OWNER-NAME}/repo-name).
 
 ## Examples
 
@@ -59,21 +78,6 @@ After making the changes, the agent marks comments as handled with descriptive s
 
 This automated workflow helps streamline the PR review process by handling common code review feedback without manual intervention.
 
-## Installation
-
-```bash
-npm install
-npm run build
-```
-
-## Usage
-
-### Running the server locally
-
-```bash
-npm start --gh_api_key=your_github_api_key_here --gh_owner=your_github_owner_here
-```
-
 ### Required Parameters
 
 #### GitHub API Key
@@ -96,6 +100,9 @@ node dist/server.js -k your_github_api_key_here
 #### GitHub Owner
 
 You must specify the GitHub owner (organization or user) as a command line argument:
+
+
+ > you can go to some GH repo and take it from the url: https://github.com/{OWNER-NAME}/repo-name
 
 ```bash
 node dist/server.js --gh_owner=your_github_owner_here
