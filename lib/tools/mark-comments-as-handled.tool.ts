@@ -42,7 +42,7 @@ export async function handleMarkCommentsAsHandled(params: unknown): Promise<{
 }> {
   try {
     // Parse and validate the input parameters using Zod
-    const parsedParams = JSON.parse(params as string);
+    const parsedParams = typeof params === 'string' ? JSON.parse(params) : params;
     const { repo, fixedComments } = markCommentsAsHandledSchema.parse(parsedParams);
 
     // Additional validation using existing validator
