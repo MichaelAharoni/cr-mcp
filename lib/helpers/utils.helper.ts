@@ -109,7 +109,7 @@ export function extractPullNumberFromComment(comment: GitHubComment): number | u
 /**
  * Transform GitHub API branch data into simplified BranchDetails
  */
-export function transformBranchData(branches: { name: string; commit: { sha: string } }[]): BranchDetails[] {
+export function transformBranchData(branches: BranchDetails[]): BranchDetails[] {
   return branches.map((branch) => ({
     name: branch.name,
     commit: {

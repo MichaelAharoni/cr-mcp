@@ -50,8 +50,8 @@ export function validateFixPrCommentsInput(repo: string, branch: string): void {
   }
 }
 
-const INVALID_COMMENT_ID_MESSAGE = 'Invalid comment ID: %s';
-const COMMENT_ID_VALIDATION_CONDITION = (commentId: number): boolean => commentId <= 0;
+export const INVALID_COMMENT_ID_MESSAGE = 'Invalid comment ID: %s';
+export const COMMENT_ID_VALIDATION_CONDITION = (commentId: number): boolean => commentId <= 0;
 
 /**
  * Validates required input for mark_comments_as_handled tool
