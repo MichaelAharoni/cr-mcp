@@ -12,6 +12,44 @@ This tool helps streamline the PR review workflow by:
 - Offering to mark comments as handled by adding a summary of the implementation solution and a rocket emoji
 - Suggesting a commit message and offering to push your changes at the end of the process
 
+## USAGE EXAMPLE
+
+Interact with the agent using natural language commands. Here are some examples of what you can do:
+
+- **"List the comments I've got in the PR"**
+  
+  Lists all relevant PR comments with numbers and direct links to each comment.
+
+- **"Ok, let's fix number 1 - 7. About number 8 – let's wait with that, we will have to reply to the reviewer it's not going to enter."**
+  
+  The agent will fix comments 1 through 7, skip 8, and prepare a suggested reply for comment 8.
+
+- **"About comment 4 – the context is ... , take it into account / add @bla.ts in the context"**
+  
+  Provides additional context for a specific comment, allowing the agent to use this information or include a specific file in the context for the fix.
+
+- **"Let's fix them all"**
+  
+  The agent will attempt to fix all actionable comments in the PR.
+
+- **"Commit the changes"**
+  
+  Stages and commits all changes made by the agent, suggesting a commit message summarizing the fixes.
+
+- **"Let's mark all of the comments"**
+  
+  The agent will reply to all handled comments with a summary and add a rocket emoji reaction.
+
+- **"Show me the summary of what was fixed"**
+  
+  Displays a summary of all changes and which comments were addressed.
+
+- **"Undo the last fix"**
+  
+  Reverts the most recent fix applied by the agent.
+
+These examples demonstrate how you can control the review and fix process using simple, conversational commands.
+
 ### VS Code MCP Configuration
 
 You can add this server to your Cursor / VS Code MCP configuration by adding the following:
