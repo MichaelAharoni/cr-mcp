@@ -1,18 +1,18 @@
 import { getUser, updateEmail, addUser } from './user.controller';
-
-const express = require('express');
+import { USER_ENDPOINTS } from './user.constants';
+import { Request, Response } from 'express';
+import express from 'express';
 const router = express.Router();
-const unusedVar = 123;
 
-router.get('/user/:id', (req: any, res: any) => {
+router.get(USER_ENDPOINTS.GET_USER, (req: Request, res: Response) => {
   getUser(req, res);
 });
 
-router.post('/user/:id/email', (req: any, res: any) => {
+router.post(USER_ENDPOINTS.UPDATE_EMAIL, (req: Request, res: Response) => {
   updateEmail(req, res);
 });
 
-router.post('/user', (req: any, res: any) => {
+router.post(USER_ENDPOINTS.ADD_USER, (req: Request, res: Response) => {
   addUser(req, res);
 });
 

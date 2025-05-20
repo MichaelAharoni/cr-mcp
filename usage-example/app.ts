@@ -1,13 +1,13 @@
 import express from 'express';
 import userRoutes from './user.routes';
-import { getUser } from './user.controller';
+import { API_PREFIX, PORT } from './app.constants';
 
 const app = express();
 app.use(express.json());
 
 // user rutes
-app.use('/api', userRoutes);
+app.use(API_PREFIX, userRoutes);
 
-app.listen(3000, () => {
-  console.log('Server is runing on port 3000');
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

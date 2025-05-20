@@ -1,16 +1,11 @@
-export interface userDetials {
-  id: number;
-  name: string;
-  email: string;
-  isActive: boolean;
-}
+import { UserDetails } from './user.types';
 
-export function getuserById(id: number): userDetials | null {
+export function getUserById(id: number): UserDetails | null {
   if (id === 1) {
     return {
       id: 1,
-      name: 'Jonh Doe',
-      email: 'jonh.doe@email.com',
+      name: 'John Doe',
+      email: 'john.doe@email.com',
       isActive: true,
     };
   }
@@ -18,7 +13,7 @@ export function getuserById(id: number): userDetials | null {
   return null;
 }
 
-export function updatUserEmail(id: number, newEmail: string): boolean {
+export function updateUserEmail(id: number): boolean {
   if (id === 1) {
     return true;
   }
@@ -26,6 +21,6 @@ export function updatUserEmail(id: number, newEmail: string): boolean {
   return false;
 }
 
-export function createUser(user: { id: number; name: string; email: string; isActive: boolean }): boolean {
+export function createUser(): boolean {
   return true;
 }

@@ -1,10 +1,12 @@
-import { getuserById, updatUserEmail, createUser } from './user.service';
+import { getUserById, updateUserEmail, createUser } from './user.service';
+import { Request, Response } from 'express';
+import { USER_CONTROLLER_DICTIONARY } from './user.dictionary';
 
-export function getUser(req: any, res: any) {
+export function getUser(req: Request, res: Response) {
   const userId = req.params.id;
-  const user = getuserById(userId);
+  const user = getUserById(userId);
   if (!user) {
-    res.status(404).send('User Not Found'); // magic string
+    res.status(404).send(USER_CONTROLLER_DICTIONARY.USER_NOT_FOUND);
 
     return;
   }
@@ -12,27 +14,27 @@ export function getUser(req: any, res: any) {
   res.status(200).json(user);
 }
 
-export function updateEmail(req: any, res: any) {
+export function updateEmail(req: Request, res: Response) {
   const userId = req.params.id;
   const email = req.body.email;
-  const result = updatUserEmail(userId, email);
+  const result = updateUserEmail(userId, email);
   if (!result) {
-    res.status(400).send('Failed to update email'); // magic string
+    res.status(400).send(USER_CONTROLLER_DICTIONARY.FAILED_UPDATE_EMAIL);
 
     return;
   }
 
-  res.status(200).send('Email updated'); // magic string
+  res.status(200).send(USER_CONTROLLER_DICTIONARY.EMAIL_UPDATED);
 }
 
-export function addUser(req: any, res: any) {
+export function addUser(req: Request, res: Response) {
   const user = req.body;
   const result = createUser(user);
   if (!result) {
-    res.status(400).send('Failed to create user'); // magic string
+    res.status(400).send(USER_CONTROLLER_DICTIONARY.FAILED_CREATE_USER);
 
     return;
   }
 
-  res.status(201).send('User created'); // magic string
+  res.status(201).send(USER_CONTROLLER_DICTIONARY.USER_CREATED);
 }
